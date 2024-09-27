@@ -12,6 +12,13 @@
 #include "SymbolTable.hpp"
 
 
+//in the example code these were in the header file; I don't think we'll be using that here?
+std::vector<emplex::Token> tokens{};
+size_t token_id{0};
+//ASTNode root{ASTNode::STATEMENT_BLOCK};
+SymbolTable symbols{};
+
+
 int main(int argc, char * argv[])
 {
   if (argc != 2) {
@@ -27,15 +34,9 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
-  //in the example code these were in the header file; I don't think we'll be using that here?
-  //std::vector<emplex::Token> tokens{};
-  size_t token_id{0};
-  //ASTNode root{ASTNode::STATEMENT_BLOCK};
 
-  SymbolTable symbols{};
-
-  //emplex::Lexer lexer;
-  //tokens = lexer.Tokenize(file); //uuncomment once lexer file exists
+  emplex::Lexer lexer;
+  tokens = lexer.Tokenize(in_file); //uuncomment once lexer file exists
 
   Parse();
 
