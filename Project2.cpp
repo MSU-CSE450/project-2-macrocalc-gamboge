@@ -58,11 +58,36 @@ void Parse() //parse the file. arguments/return probably not final
   }*/
 }
 
-  ASTNode ParseStatement() {
-    /*switch (tokens[token_id]) {
-    using namespace emplex;
-    case Lexer::ID_PRINT: return ParsePrint();
-    default:
-      return ParseExpression();
-    }*/
-  }
+
+ASTNode ParseDeclare() {
+  /*auto type_token = tokens[token_id++];
+  
+  std::string var_name{};
+
+  switch (type_token) {
+  using namespace emplex;
+  case Lexer::ID_TYPE:  // @CAO This should be called LIST.
+    if (tokens[token_id] != Lexer::ID_ID) {
+      Error(tokens[token_id].line_id, "Expected identifier in variable declaration.");
+    }
+    var_name = tokens[token_id];
+    size_t var_id = symbols.AddVar(tokens[token_id].line_id, var_name);
+    ++token_id;
+    if (tokens[token_id] == ';') return ASTNode{};
+
+    if (tokens[token_id] != '=') {
+      Error(line tokens[token_id].line_id, "Expected ';' or '='.");
+    }
+    ++token_id;
+
+    auto rhs_node = ParseExpression();
+
+    ASTNode out_node(ASTNode::ASSIGN);
+    out_node.children.push_back(MakeVarNode(var_id));
+    out_node.children.push_back(rhs_node);
+    
+    return out_node;
+  }*/
+
+  return ASTNode{};
+}
