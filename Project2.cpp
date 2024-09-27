@@ -29,6 +29,10 @@ int main(int argc, char * argv[])
 
   // TO DO:  
   // PARSE input file to create Abstract Syntax Tree (AST).
+  // Look through each token at a time. Branch to different sections of code based on the token type.
+  // We should never have to look at a previous token ever, if we do it right
+  // Each helper funtion returns an Abstract Syntax Tree Node (I think)
+  // Start with SET and PRINT, as seen in test cases
   // EXECUTE the AST to run your program.
   
 }
