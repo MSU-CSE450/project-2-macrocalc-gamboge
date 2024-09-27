@@ -57,3 +57,12 @@ void Parse() //parse the file. arguments/return probably not final
     if (cur_node.type != ASTNode::EMPTY) root.children.push_back(cur_node);
   }*/
 }
+
+  ASTNode ParseStatement() {
+    /*switch (tokens[token_id]) {
+    using namespace emplex;
+    case Lexer::ID_PRINT: return ParsePrint();
+    default:
+      return ParseExpression();
+    }*/
+  }
