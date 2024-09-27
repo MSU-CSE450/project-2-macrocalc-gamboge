@@ -27,6 +27,18 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
+  //in the example code these were in the header file; I don't think we'll be using that here?
+  //std::vector<emplex::Token> tokens{};
+  size_t token_id{0};
+  //ASTNode root{ASTNode::STATEMENT_BLOCK};
+
+  SymbolTable symbols{};
+
+  //emplex::Lexer lexer;
+  //tokens = lexer.Tokenize(file); //uuncomment once lexer file exists
+
+  Parse();
+
   // TO DO:  
   // PARSE input file to create Abstract Syntax Tree (AST).
   // Look through each token at a time. Branch to different sections of code based on the token type.
@@ -35,4 +47,13 @@ int main(int argc, char * argv[])
   // Start with SET and PRINT, as seen in test cases
   // EXECUTE the AST to run your program.
   
+}
+
+
+void Parse() //parse the file. arguments/return probably not final
+{
+  /*while (token_id < tokens.size()) {
+    ASTNode cur_node = ParseStatement();
+    if (cur_node.type != ASTNode::EMPTY) root.children.push_back(cur_node);
+  }*/
 }
