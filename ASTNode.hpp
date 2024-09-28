@@ -16,7 +16,7 @@ private:
     ASSIGN
   };
   Type type{EMPTY};
-  size_t value{0};
+  size_t value{0};  //this is an ID of a variable in the syntax table, if necessary
   std::vector<ASTNode> children{};
   
 public:
