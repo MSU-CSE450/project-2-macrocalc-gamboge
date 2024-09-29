@@ -15,7 +15,7 @@
 //in the example code these were in the header file; I don't think we'll be using that here?
 std::vector<emplex::Token> tokens{};
 size_t token_id{0};
-//ASTNode root{ASTNode::STATEMENT_BLOCK};
+ASTNode root{ASTNode::STATEMENT_BLOCK};
 SymbolTable symbols{};
 
 

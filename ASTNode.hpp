@@ -8,13 +8,16 @@
 #include "SymbolTable.hpp"
 
 class ASTNode {
-private:
-  // PLACE AST NODE INFO HERE.
+public:
   enum Type {
     EMPTY = 0,
     STATEMENT_BLOCK,
     ASSIGN
   };
+
+private:
+  // PLACE AST NODE INFO HERE.
+
   Type type{EMPTY};
   size_t value{0};  //this is an ID of a variable in the syntax table, if necessary
   std::vector<ASTNode> children{};
