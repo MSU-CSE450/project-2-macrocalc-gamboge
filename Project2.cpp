@@ -90,5 +90,5 @@ ASTNode ParseDeclare() {
     return out_node;
   }*/
 
-  return ASTNode{};
+  return ASTNode{ASTNode::EMPTY}; //I think?
 }
