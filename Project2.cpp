@@ -46,8 +46,9 @@ int main(int argc, char * argv[])
   // We should never have to look at a previous token ever, if we do it right
   // Each helper funtion returns an Abstract Syntax Tree Node (I think)
   // Start with SET and PRINT, as seen in test cases
-  // EXECUTE the AST to run your program.
   
+  // EXECUTE the AST to run your program.
+  root.Run(symbols);
 }
 
 
