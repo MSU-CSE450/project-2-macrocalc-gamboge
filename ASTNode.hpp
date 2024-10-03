@@ -32,9 +32,26 @@ private:
 public:
   // CONSTRUCTORS, ETC HERE.
   // CAN SPECIFY NODE TYPE AND ANY NEEDED VALUES HERE OR USING OTHER FUNCTIONS.
-  ASTNode(Type thisType) {
-    type = thisType;
-  }
+  ASTNode(Type type = EMPTY) : type(type) {}
+  ASTNode(Type type = EMPTY, size_t value) : type(type), value(value) {}
+  ASTNode(Type type = LEAF_LITERAL, double leaf_literal_contents) : type(type), leaf_literal_contents(leaf_literal_contents) {}
+  ASTNode(Type type = LEAF_STRING, std::string leaf_str_contents) : type(type), leaf_str_contents(leaf_str_contents) {}
+  ASTNode(Type type = EMPTY, ASTNode child) : type(type) {AddChild(child);}
+  ASTNode(Type type = EMPTY, ASTNode child1, ASTNode child2) : type(type) {AddChild(child1); AddChild(child2);}
+
+  ASTNode(const ASTNode &) = default;
+  ASTNode(ASTNode &&) = default;
+  ASTNode & operator=(const ASTNode &) = default;
+  ASTNode & operator=(ASTNode &&) = default;
+  ~ASTNode() {}
+
+  void SetValue(size_t in) { value = in;}
+
+  size_t GetValue() const {return value;}
+  Type GetType() const {return type;}
+  const double & GetLitValue() const {return leaf_literal_contents;}
+  const std::string & GetLitString() const {return leaf_str_contents;}
+
 
   // CODE TO ADD CHILDREN AND SETUP AST NODE HERE.
   void AddChild(ASTNode node) {
@@ -42,8 +59,12 @@ public:
     ;
   }
 
-  std::vector<ASTNode> GetChildren() {
-
+  const ASTNode & GetChild(size_t id) const {
+    assert(id < children.size());
+    return children[id];
+  }
+  const std::vector<ASTNode> & GetChildren() const {
+    return children;
   }
   
   // CODE TO EXECUTE THIS NODE (AND ITS CHILDREN, AS NEEDED).
@@ -67,6 +88,11 @@ public:
     case PRINT:
       //run children; it should return a string (if it's a string) or the result of the calculation
       std::cout << children[0].Run(symbols);
+      //if getchild() is a string:
+      //print getchild().contents
+      if (GetChild(0).GetType() == LEAF_STRING) {
+        std::cout << GetChild(0).GetLitString();
+      }
       break;
 
     case LEAF_STRING:
