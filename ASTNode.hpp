@@ -66,6 +66,13 @@ public:
   const std::vector<ASTNode> & GetChildren() const {
     return children;
   }
+
+  float RunChild(size_t id, SymbolTable & symbols) {
+    assert(id < children.size());
+    return children[id].Run(symbols);
+  }
+
+
   
   // CODE TO EXECUTE THIS NODE (AND ITS CHILDREN, AS NEEDED).
   float Run(SymbolTable & symbols) { 
@@ -76,28 +83,26 @@ public:
     {
 
     case ASSIGN:
-      //assert(GetChildren.size() == 2);
-      //assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
+      assert(GetChildren().size() == 2);
+      assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
 
-      //size_t var_id = GetChild(0).Run();
-      //float assignVal = GetChild(1).Run();
+      size_t var_id = RunChild(0, symbols);
+      float assignVal = RunChild(1, symbols);
       //return symbols. VarValue(var_id) = assignVal;
       break;
     case STATEMENT_BLOCK:
       break;
     case PRINT:
-      //run children; it should return a string (if it's a string) or the result of the calculation
-      std::cout << children[0].Run(symbols);
-      //if getchild() is a string:
-      //print getchild().contents
-      if (GetChild(0).GetType() == LEAF_STRING) {
+      if (GetChild(0).GetType() == LEAF_STRING) { //in case we're printing a string, and not an expression
         std::cout << GetChild(0).GetLitString();
+      }
+      else {
+      std::cout << RunChild(0, symbols);
       }
       break;
 
     case LEAF_STRING:
-      //return string contents as string
-      //return leaf_str_contents;
+      //this code won't be run; instead, the string's value is retrieved from the parent
       break;
     case LEAF_LITERAL:
       //return literal variable as double
