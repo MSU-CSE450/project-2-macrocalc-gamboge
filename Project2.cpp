@@ -72,6 +72,14 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
+  SymbolTable test;
+
+  test.HasVar("1");
+  test.AddVar("2", 3);
+  
+  std::cout << "here";
+  
+
   std::string filename = argv[1];
   
   std::ifstream in_file(filename);              // Load the input file
