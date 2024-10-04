@@ -33,11 +33,11 @@ public:
   // CONSTRUCTORS, ETC HERE.
   // CAN SPECIFY NODE TYPE AND ANY NEEDED VALUES HERE OR USING OTHER FUNCTIONS.
   ASTNode(Type type = EMPTY) : type(type) {}
-  ASTNode(Type type = EMPTY, size_t value) : type(type), value(value) {}
-  ASTNode(Type type = LEAF_LITERAL, double leaf_literal_contents) : type(type), leaf_literal_contents(leaf_literal_contents) {}
-  ASTNode(Type type = LEAF_STRING, std::string leaf_str_contents) : type(type), leaf_str_contents(leaf_str_contents) {}
-  ASTNode(Type type = EMPTY, ASTNode child) : type(type) {AddChild(child);}
-  ASTNode(Type type = EMPTY, ASTNode child1, ASTNode child2) : type(type) {AddChild(child1); AddChild(child2);}
+  //ASTNode(Type type = EMPTY, size_t value = 1) : type(type), value(value) {}
+  //ASTNode(Type type = LEAF_LITERAL, double leaf_literal_contents = 0) : type(type), leaf_literal_contents(leaf_literal_contents) {}
+  //ASTNode(Type type = LEAF_STRING, std::string leaf_str_contents = "") : type(type), leaf_str_contents(leaf_str_contents) {}
+  //ASTNode(Type type = EMPTY, ASTNode child) : type(type) {AddChild(child);}
+  //ASTNode(Type type = EMPTY, ASTNode child1, ASTNode child2) : type(type) {AddChild(child1); AddChild(child2);}
 
   ASTNode(const ASTNode &) = default;
   ASTNode(ASTNode &&) = default;

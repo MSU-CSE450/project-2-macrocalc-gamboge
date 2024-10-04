@@ -42,6 +42,7 @@ int main(int argc, char * argv[])
 
   // TO DO:  
   // PARSE input file to create Abstract Syntax Tree (AST).
+  
   // Look through each token at a time. Branch to different sections of code based on the token type.
   // We should never have to look at a previous token ever, if we do it right
   // Each helper funtion returns an Abstract Syntax Tree Node (I think)
@@ -54,10 +55,10 @@ int main(int argc, char * argv[])
 
 void Parse() //parse the file. arguments/return probably not final
 {
-  /*while (token_id < tokens.size()) {
-    ASTNode cur_node = ParseStatement();
-    if (cur_node.type != ASTNode::EMPTY) root.children.push_back(cur_node);
-  }*/
+  while (token_id < tokens.size()) {
+    //ASTNode cur_node = ParseStatement(); //error? why?
+    //if (cur_node.GetType() != ASTNode::EMPTY) root.AddChild(cur_node);
+  }
 }
 
 
