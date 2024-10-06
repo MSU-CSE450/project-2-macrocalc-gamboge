@@ -5,65 +5,27 @@
 #include <unordered_map>
 #include <vector>
 
-// // Below are some suggestions on how you might want to divide up your project.
-// // You may delete this and divide it up however you like.
+// Below are some suggestions on how you might want to divide up your project.
+// You may delete this and divide it up however you like.
 // #include "ASTNode.hpp"
 #include "lexer.hpp"
 #include "SymbolTable.hpp"
 
 
-// //in the example code these were in the header file; I don't think we'll be using that here?
-std::vector<emplex::Token> tokens{};
+//in the example code these were in the header file; I don't think we'll be using that here?
 size_t token_id{0};
 // ASTNode root{ASTNode::STATEMENT_BLOCK};
-// SymbolTable symbols{};
+SymbolTable symbols{};
 
-
-void Parse() //parse the file. arguments/return probably not final
+//Parse each token
+void Parse(std::vector<emplex::Token> tokens)
 {
-  // while (token_id < tokens.size()) {
-  //   //ASTNode cur_node = ParseStatement(); //error? why?
-  //   //if (cur_node.GetType() != ASTNode::EMPTY) root.AddChild(cur_node);
-  // }
-}
-
-// ASTNode ParseDeclare() {
-
-int ParseDeclare() {
-  /*auto type_token = tokens[token_id++];
-  
-  std::string var_name{};
-
-  switch (type_token) {
-  using namespace emplex;
-  case Lexer::ID_TYPE:  // @CAO This should be called LIST.
-    if (tokens[token_id] != Lexer::ID_ID) {
-      Error(tokens[token_id].line_id, "Expected identifier in variable declaration.");
+  for (emplex::Token token: tokens) {
+    if(token.id == 248 || token.id == 250){ //Comment Line or whitespace
+      continue;
     }
-    var_name = tokens[token_id];
-    size_t var_id = symbols.AddVar(tokens[token_id].line_id, var_name);
-    ++token_id;
-    if (tokens[token_id] == ';') return ASTNode{};
-
-    if (tokens[token_id] != '=') {
-      Error(line tokens[token_id].line_id, "Expected ';' or '='.");
-    }
-    ++token_id;
-
-    auto rhs_node = ParseExpression();
-
-    ASTNode out_node(ASTNode::ASSIGN);
-    out_node.children.push_back(MakeVarNode(var_id));
-    out_node.children.push_back(rhs_node);
-    
-    return out_node;
-  }*/
-
-  // return ASTNode{ASTNode::EMPTY}; //I think?
-  return 0;
+  }
 }
-
-
 
 int main(int argc, char * argv[])
 {
@@ -72,39 +34,56 @@ int main(int argc, char * argv[])
     exit(1);
   }
 
-  SymbolTable test;
-
-  test.HasVar("1");
-  test.AddVar("2", 3);
-  
-  std::cout << "here";
-  
-
   std::string filename = argv[1];
   
-  std::ifstream in_file(filename);              // Load the input file
+  std::ifstream in_file(filename);
   if (in_file.fail()) {
     std::cout << "ERROR: Unable to open file '" << filename << "'." << std::endl;
     exit(1);
   }
 
-
+  //Initialize Tokens
   emplex::Lexer lexer;
-  tokens = lexer.Tokenize(in_file); //uuncomment once lexer file exists
+  std::vector<emplex::Token> tokens = lexer.Tokenize(in_file);
 
-  Parse();
-
-
-  // // TO DO:  
-  // // PARSE input file to create Abstract Syntax Tree (AST).
+  //Go through each token within file
+  Parse(tokens);
   
-  // // Look through each token at a time. Branch to different sections of code based on the token type.
-  // // We should never have to look at a previous token ever, if we do it right
-  // // Each helper funtion returns an Abstract Syntax Tree Node (I think)
-  // // Start with SET and PRINT, as seen in test cases
-  
-  // // EXECUTE the AST to run your program.
+  //Starts execution of AST Node which grew during Parse
   // root.Run(symbols);
-  std::cout << "hello world" << std::endl;
-  return 0;
 }
+
+
+
+// ASTNode ParseDeclare() {
+//   /*auto type_token = tokens[token_id++];
+  
+//   std::string var_name{};
+
+//   switch (type_token) {
+//   using namespace emplex;
+//   case Lexer::ID_TYPE:  // @CAO This should be called LIST.
+//     if (tokens[token_id] != Lexer::ID_ID) {
+//       Error(tokens[token_id].line_id, "Expected identifier in variable declaration.");
+//     }
+//     var_name = tokens[token_id];
+//     size_t var_id = symbols.AddVar(tokens[token_id].line_id, var_name);
+//     ++token_id;
+//     if (tokens[token_id] == ';') return ASTNode{};
+
+//     if (tokens[token_id] != '=') {
+//       Error(line tokens[token_id].line_id, "Expected ';' or '='.");
+//     }
+//     ++token_id;
+
+//     auto rhs_node = ParseExpression();
+
+//     ASTNode out_node(ASTNode::ASSIGN);
+//     out_node.children.push_back(MakeVarNode(var_id));
+//     out_node.children.push_back(rhs_node);
+    
+//     return out_node;
+//   }*/
+
+//   return ASTNode{ASTNode::EMPTY}; //I think?
+// }
