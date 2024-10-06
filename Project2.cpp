@@ -7,16 +7,45 @@
 
 // Below are some suggestions on how you might want to divide up your project.
 // You may delete this and divide it up however you like.
-// #include "ASTNode.hpp"
+#include "ASTNode.hpp"
 #include "lexer.hpp"
 #include "SymbolTable.hpp"
 
 
 //in the example code these were in the header file; I don't think we'll be using that here?
 size_t token_id{0};
-// ASTNode root{ASTNode::STATEMENT_BLOCK};
+ASTNode root{ASTNode::STATEMENT_BLOCK, nullptr};
+ASTNode curr = root;
 SymbolTable symbols{};
 
+void Math(emplex::Token token){
+  if(emplex::Lexer::TokenName(token.id) == "**"){
+      ASTNode temp{ASTNode::EXPONENT, &root};
+      temp.AddChild(root);
+      curr = temp;
+    }
+    else if(emplex::Lexer::TokenName(token.id) == "*"){
+
+    }
+    else if(emplex::Lexer::TokenName(token.id) == "/"){
+
+    }
+    else if(emplex::Lexer::TokenName(token.id) == "%"){
+
+    }
+    else if(emplex::Lexer::TokenName(token.id) == "+"){
+
+    }
+    else if(emplex::Lexer::TokenName(token.id) == "-"){
+
+    }
+}
+
+void Print(emplex::Token token){
+  
+}
+
+bool print = false;
 //Parse each token
 void Parse(std::vector<emplex::Token> tokens)
 {
@@ -24,6 +53,18 @@ void Parse(std::vector<emplex::Token> tokens)
     if(token.id == 248 || token.id == 250){ //Comment Line or whitespace
       continue;
     }
+
+    Math(token);
+
+    if(token.id == 255){
+      print = true;
+      continue;
+    }
+
+
+    if(print) Print(token);
+
+
   }
 }
 
