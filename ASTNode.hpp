@@ -191,12 +191,12 @@ public:
     //   //return leaf_literal_contents;
     //   //see example code, they just do this.GetWords
     //   break;
-    // case LEAF_VARIABLE:
-    //   {
-    //     //check symbol table for variable.
-    //     return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
-    //     break;
-    //   }
+    case LEAF_VARIABLE:
+      {
+        //check symbol table for variable.
+        return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
+        break;
+      }
     default:
       //empty
       //ERROR.
