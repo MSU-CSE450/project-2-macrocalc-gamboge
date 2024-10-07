@@ -25,7 +25,7 @@ private:
   std::string value{0};  //this is an ID of a variable in the syntax table, if necessary
   std::vector<ASTNode> children{};
 
-  ASTNode* parent{nullptr};
+  //ASTNode* parent{nullptr};
   //ASTNode* left{nullptr};
   //ASTNode* right{nullptr};
   
@@ -35,8 +35,8 @@ private:
   
 public:
   //Specify the node type on construction
-  ASTNode(Type type, ASTNode* parent) : type(type), parent(parent) {}
-  ASTNode(Type type, ASTNode* parent, std::string value) : type(type), value(value), parent(parent) {}
+  ASTNode(Type type/*, ASTNode* parent*/) : type(type)/*, parent(parent)*/ {}
+  ASTNode(Type type, /*ASTNode* parent,*/ std::string value) : type(type), value(value)/*, parent(parent)*/ {}
   // ASTNode(Type type, double leaf_literal_contents) 
   //       : type(type), leaf_literal_contents(leaf_literal_contents) {
   //       assert(type == LEAF_LITERAL && "Type must be LEAF_LITERAL for this constructor");
@@ -64,7 +64,7 @@ public:
 
   void AddChild(ASTNode node) {
     children.push_back(node);
-    node.parent = this;
+    //node.parent = this;
   }
 
   //Get Child Info
