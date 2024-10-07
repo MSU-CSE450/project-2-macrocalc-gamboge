@@ -138,6 +138,30 @@ public:
       else if(value == "-"){
         result = leftSide - rightSide;
       }
+      else if(value == "<"){
+        result = leftSide < rightSide;
+      }
+      else if(value == "<="){
+        result = leftSide <= rightSide;
+      }
+      else if(value == ">"){
+        result = leftSide > rightSide;
+      }
+      else if(value == ">="){
+        result = leftSide >= rightSide;
+      }
+      else if(value == "=="){
+        result = leftSide == rightSide;
+      }
+      else if(value == "!="){
+        result = leftSide != rightSide;
+      }
+      else if(value == "&&"){
+        result = leftSide && rightSide;
+      }
+      else if(value == "||"){
+        result = leftSide || rightSide;
+      }
       else {
         //err
       }
