@@ -20,23 +20,37 @@ SymbolTable symbols{};
 
 void Math(emplex::Token token){
   if(emplex::Lexer::TokenName(token.id) == "**"){
-      ASTNode temp{ASTNode::EXPONENT, &root};
+      ASTNode temp{ASTNode::STATEMENT_BLOCK, &root, "**"};
       temp.AddChild(root);
       curr = temp;
     }
     else if(emplex::Lexer::TokenName(token.id) == "*"){
-
+      ASTNode temp{ASTNode::STATEMENT_BLOCK, &root, "*"};
+      temp.AddChild(root);
+      curr = temp;
     }
     else if(emplex::Lexer::TokenName(token.id) == "/"){
+      ASTNode temp{ASTNode::STATEMENT_BLOCK, &root, "/"};
+      temp.AddChild(root);
+      curr = temp;
 
     }
     else if(emplex::Lexer::TokenName(token.id) == "%"){
+      ASTNode temp{ASTNode::STATEMENT_BLOCK, &root, "%"};
+      temp.AddChild(root);
+      curr = temp;
 
     }
     else if(emplex::Lexer::TokenName(token.id) == "+"){
+      ASTNode temp{ASTNode::STATEMENT_BLOCK, &root, "+"};
+      temp.AddChild(root);
+      curr = temp;
 
     }
     else if(emplex::Lexer::TokenName(token.id) == "-"){
+      ASTNode temp{ASTNode::STATEMENT_BLOCK, &root, "-"};
+      temp.AddChild(root);
+      curr = temp;
 
     }
 }

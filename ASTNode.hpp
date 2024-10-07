@@ -28,7 +28,7 @@ public:
 
 private:
   Type type{EMPTY};
-  double value{0};  //this is an ID of a variable in the syntax table, if necessary
+  std::string value{0};  //this is an ID of a variable in the syntax table, if necessary
   std::vector<ASTNode> children{};
 
   ASTNode* parent{nullptr};
@@ -37,12 +37,12 @@ private:
   
   
   std::string leaf_str_contents; //these two variables used only if the type is leaf_string/leaf_literal
-  double leaf_literal_contents;
+  //double leaf_literal_contents;
   
 public:
   //Specify the node type on construction
   ASTNode(Type type, ASTNode* parent) : type(type), parent(parent) {}
-  ASTNode(Type type, ASTNode* parent, size_t value) : type(type), value(value), parent(parent) {}
+  ASTNode(Type type, ASTNode* parent, std::string value) : type(type), value(value), parent(parent) {}
   // ASTNode(Type type, double leaf_literal_contents) 
   //       : type(type), leaf_literal_contents(leaf_literal_contents) {
   //       assert(type == LEAF_LITERAL && "Type must be LEAF_LITERAL for this constructor");
@@ -59,13 +59,13 @@ public:
   ~ASTNode() {}
 
   //Values
-  void SetValue(size_t in) { value = in;}
-  size_t GetValue() const {return value;}
+  void SetValue(std::string in) { value = in;}
+  std::string GetValue() const {return value;}
   
   //Get Info
   Type GetType() const {return type;}
-  const double & GetLitValue() const {return leaf_literal_contents;}
-  const std::string & GetLitString() const {return leaf_str_contents;}
+  //const double & GetLitValue() const {return leaf_literal_contents;}
+  //const std::string & GetLitString() const {return leaf_str_contents;}
 
 
   void AddChild(ASTNode node) {
@@ -102,37 +102,72 @@ public:
       assert(GetChildren().size() == 2);
       assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
 
-      size_t var_id = RunChild(0, symbols);
+      std::string var_id = GetChild(0).GetValue();
       float assignVal = RunChild(1, symbols);
-      //return symbols. VarValue(var_id) = assignVal;
-      break;
-      }
-    case STATEMENT_BLOCK:
-      break;
-    case PRINT:
-    {
-      if (GetChild(0).GetType() == LEAF_STRING) { //in case we're printing a string, and not an expression
-        std::cout << GetChild(0).GetLitString();
-      }
-      else {
-      std::cout << RunChild(0, symbols);
-      }
+      symbols.SetValue(var_id, assignVal);
+      return assignVal;
       break;
     }
-    case LEAF_STRING:
-      //this code won't be run; instead, the string's value is retrieved from the parent
-      break;
-    case LEAF_LITERAL:
-      //return literal variable as double
-      //return leaf_literal_contents;
-      //see example code, they just do this.GetWords
-      break;
-    case LEAF_VARIABLE:
-      //check symbol table for variable.
-      //if not there, ??? (can't just error because it might be a declaration, I think?)
-      //return symbols.VarValue(GetValue())
-      break;
+    case STATEMENT_BLOCK: {
+      assert(GetChildren().size() == 2);
 
+      double leftSide = RunChild(0, symbols);
+      double rightSide = RunChild(1, symbols);
+      double result;
+      if(value == "**"){
+        result = std::pow(leftSide, rightSide);
+      }
+      else if(value == "*"){
+        result = leftSide * rightSide;
+      }
+      else if(value == "/"){
+        if (rightSide == 0) {
+          //err
+        }
+        result = leftSide / rightSide;
+      }
+      else if(value == "%"){
+        if (rightSide == 0) {
+          //err
+        }
+        result = std::fmod(leftSide, rightSide);
+      }
+      else if(value == "+"){
+        result = leftSide + rightSide;
+      }
+      else if(value == "-"){
+        result = leftSide - rightSide;
+      }
+      else {
+        //err
+      }
+      return result;
+      break;
+    }
+    // case PRINT:
+    // {
+    //   if (GetChild(0).GetType() == LEAF_STRING) { //in case we're printing a string, and not an expression
+    //     std::cout << GetChild(0).GetLitString();
+    //   }
+    //   else {
+    //   std::cout << RunChild(0, symbols);
+    //   }
+    //   break;
+    // }
+    // case LEAF_STRING:
+    //   //this code won't be run; instead, the string's value is retrieved from the parent
+    //   break;
+    // case LEAF_LITERAL:
+    //   //return literal variable as double
+    //   //return leaf_literal_contents;
+    //   //see example code, they just do this.GetWords
+    //   break;
+    // case LEAF_VARIABLE:
+    //   {
+    //     //check symbol table for variable.
+    //     return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
+    //     break;
+    //   }
     default: //TODO: make enough cases that default is EMPTY, which shouldn't appear
       break;
     }
