@@ -13,17 +13,11 @@ public:
     EMPTY = 0,
     STATEMENT_BLOCK,
     ASSIGN,
-    PRINT,
-    LEAF_VARIABLE,
-    LEAF_STRING,
-    LEAF_LITERAL,
-    EXPONENT,
-    MULTIPLE,
-    DIVIDE,
-    MODULUS,
-    ADD,
-    DIFFERENCE,
-    VALUE
+    //PRINT,
+    UNARY_STATEMENT,
+    LEAF_VARIABLE
+    //LEAF_STRING,
+    //LEAF_LITERAL,
   };
 
 private:
@@ -108,6 +102,17 @@ public:
       return assignVal;
       break;
     }
+    case UNARY_STATEMENT: {
+      assert(GetChildren().size() == 1);
+
+      double operand = RunChild(0, symbols);
+      if(value == "!"){
+        return !operand;
+      }
+      else if(value == "-"){
+        return -operand;
+      }
+    }
     case STATEMENT_BLOCK: {
       assert(GetChildren().size() == 2);
 
@@ -115,57 +120,56 @@ public:
       double rightSide = RunChild(1, symbols);
       double result;
       if(value == "**"){
-        result = std::pow(leftSide, rightSide);
+        return std::pow(leftSide, rightSide);
       }
       else if(value == "*"){
-        result = leftSide * rightSide;
+        return leftSide * rightSide;
       }
       else if(value == "/"){
         if (rightSide == 0) {
           //err
         }
-        result = leftSide / rightSide;
+        return leftSide / rightSide;
       }
       else if(value == "%"){
         if (rightSide == 0) {
           //err
         }
-        result = std::fmod(leftSide, rightSide);
+        return std::fmod(leftSide, rightSide);
       }
       else if(value == "+"){
-        result = leftSide + rightSide;
+        return leftSide + rightSide;
       }
       else if(value == "-"){
-        result = leftSide - rightSide;
+        return leftSide - rightSide;
       }
       else if(value == "<"){
-        result = leftSide < rightSide;
+        return leftSide < rightSide;
       }
       else if(value == "<="){
-        result = leftSide <= rightSide;
+        return leftSide <= rightSide;
       }
       else if(value == ">"){
-        result = leftSide > rightSide;
+        return leftSide > rightSide;
       }
       else if(value == ">="){
-        result = leftSide >= rightSide;
+        return leftSide >= rightSide;
       }
       else if(value == "=="){
-        result = leftSide == rightSide;
+        return leftSide == rightSide;
       }
       else if(value == "!="){
-        result = leftSide != rightSide;
+        return leftSide != rightSide;
       }
       else if(value == "&&"){
-        result = leftSide && rightSide;
+        return leftSide && rightSide;
       }
       else if(value == "||"){
-        result = leftSide || rightSide;
+        return leftSide || rightSide;
       }
       else {
-        //err
+        //error
       }
-      return result;
       break;
     }
     // case PRINT:
