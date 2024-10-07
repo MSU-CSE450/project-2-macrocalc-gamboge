@@ -26,8 +26,8 @@ private:
   std::vector<ASTNode> children{};
 
   ASTNode* parent{nullptr};
-  ASTNode* left{nullptr};
-  ASTNode* right{nullptr};
+  //ASTNode* left{nullptr};
+  //ASTNode* right{nullptr};
   
   
   std::string leaf_str_contents; //these two variables used only if the type is leaf_string/leaf_literal
@@ -64,6 +64,7 @@ public:
 
   void AddChild(ASTNode node) {
     children.push_back(node);
+    node.parent = this;
   }
 
   //Get Child Info
@@ -196,7 +197,10 @@ public:
     //     return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
     //     break;
     //   }
-    default: //TODO: make enough cases that default is EMPTY, which shouldn't appear
+    default:
+      //empty
+      //ERROR.
+
       break;
     }
   }
