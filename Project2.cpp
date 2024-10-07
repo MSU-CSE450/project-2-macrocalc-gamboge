@@ -14,7 +14,7 @@
 
 //in the example code these were in the header file; I don't think we'll be using that here?
 size_t token_id{0};
-ASTNode root{ASTNode::STATEMENT_BLOCK, nullptr};
+ASTNode root{ASTNode::STATEMENT_BLOCK};
 ASTNode curr = root;
 SymbolTable symbols{};
 
@@ -22,7 +22,7 @@ void Math(emplex::Token token){
   if(emplex::Lexer::TokenName(token.id) == "**"){
       ASTNode temp{ASTNode::STATEMENT_BLOCK, "**"};
       temp.AddChild(root);
-      curr = temp;
+      // curr = temp;
     }
     else if(emplex::Lexer::TokenName(token.id) == "*"){
       ASTNode temp{ASTNode::STATEMENT_BLOCK, "*"};
@@ -55,11 +55,23 @@ void Math(emplex::Token token){
     }
 }
 
+bool print = false;
+
 void Print(emplex::Token token){
-  
+  if(token.lexeme == ")"){
+    std::cout << std::endl;
+    print = false;
+  } else if (token.lexeme != "("){
+
+    //Print out with variables or normal string
+    if(strcmp(emplex::Lexer::TokenName(token.id), "ID_VARIABLE") == 0){
+      std::cout << symbols.GetValue(token.lexeme);
+    } else {
+      std::cout << token.lexeme;
+    }
+  }
 }
 
-bool print = false;
 //Parse each token
 void Parse(std::vector<emplex::Token> tokens)
 {
@@ -75,10 +87,7 @@ void Parse(std::vector<emplex::Token> tokens)
       continue;
     }
 
-
     if(print) Print(token);
-
-
   }
 }
 
@@ -102,6 +111,7 @@ int main(int argc, char * argv[])
   std::vector<emplex::Token> tokens = lexer.Tokenize(in_file);
 
   //Go through each token within file
+
   Parse(tokens);
   
   //Starts execution of AST Node which grew during Parse

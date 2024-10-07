@@ -26,9 +26,6 @@ private:
   std::vector<ASTNode> children{};
 
   //ASTNode* parent{nullptr};
-  //ASTNode* left{nullptr};
-  //ASTNode* right{nullptr};
-  
   
   std::string leaf_str_contents; //these two variables used only if the type is leaf_string/leaf_literal
   //double leaf_literal_contents;
@@ -79,7 +76,7 @@ public:
   // Executes recursive tree from current Node
   float RunChild(size_t id, SymbolTable & symbols) {
     assert(id < children.size());
-    return children[id].Run(symbols);
+    // return children[id].Run(symbols);
   }
 
 
