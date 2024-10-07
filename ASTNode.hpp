@@ -81,59 +81,61 @@ public:
     return children;
   }
 
-  // //Executes recursive tree from current Node
-  // float RunChild(size_t id, SymbolTable & symbols) {
-  //   assert(id < children.size());
-  //   return children[id].Run(symbols);
-  // }
+  // Executes recursive tree from current Node
+  float RunChild(size_t id, SymbolTable & symbols) {
+    assert(id < children.size());
+    return children[id].Run(symbols);
+  }
 
 
 
   
-//   // CODE TO EXECUTE THIS NODE (AND ITS CHILDREN, AS NEEDED).
-//   float Run(SymbolTable & symbols) { 
-//     // recursively call Run on each child, if it exists, unless we have the information
-//     // on both sides to effectively execute.
-//     // how do we know information exists/how do we store that?
-//     switch (type)
-//     {
+  // CODE TO EXECUTE THIS NODE (AND ITS CHILDREN, AS NEEDED).
+  float Run(SymbolTable & symbols) { 
+    // recursively call Run on each child, if it exists, unless we have the information
+    // on both sides to effectively execute.
+    // how do we know information exists/how do we store that?
+    switch (type)
+    {
 
-//     case ASSIGN:
-//       assert(GetChildren().size() == 2);
-//       assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
+    case ASSIGN: {
+      assert(GetChildren().size() == 2);
+      assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
 
-//       size_t var_id = RunChild(0, symbols);
-//       float assignVal = RunChild(1, symbols);
-//       //return symbols. VarValue(var_id) = assignVal;
-//       break;
-//     case STATEMENT_BLOCK:
-//       break;
-//     case PRINT:
-//       if (GetChild(0).GetType() == LEAF_STRING) { //in case we're printing a string, and not an expression
-//         std::cout << GetChild(0).GetLitString();
-//       }
-//       else {
-//       std::cout << RunChild(0, symbols);
-//       }
-//       break;
+      size_t var_id = RunChild(0, symbols);
+      float assignVal = RunChild(1, symbols);
+      //return symbols. VarValue(var_id) = assignVal;
+      break;
+      }
+    case STATEMENT_BLOCK:
+      break;
+    case PRINT:
+    {
+      if (GetChild(0).GetType() == LEAF_STRING) { //in case we're printing a string, and not an expression
+        std::cout << GetChild(0).GetLitString();
+      }
+      else {
+      std::cout << RunChild(0, symbols);
+      }
+      break;
+    }
+    case LEAF_STRING:
+      //this code won't be run; instead, the string's value is retrieved from the parent
+      break;
+    case LEAF_LITERAL:
+      //return literal variable as double
+      //return leaf_literal_contents;
+      //see example code, they just do this.GetWords
+      break;
+    case LEAF_VARIABLE:
+      //check symbol table for variable.
+      //if not there, ??? (can't just error because it might be a declaration, I think?)
+      //return symbols.VarValue(GetValue())
+      break;
 
-//     case LEAF_STRING:
-//       //this code won't be run; instead, the string's value is retrieved from the parent
-//       break;
-//     case LEAF_LITERAL:
-//       //return literal variable as double
-//       //return leaf_literal_contents;
-//       //see example code, they just do this.GetWords
-//       break;
-//     case LEAF_VARIABLE:
-//       //check symbol table for variable.
-//       //if not there, ??? (can't just error because it might be a declaration, I think?)
-//       //return symbols.VarValue(GetValue())
-//       break;
-
-//     default: //TODO: make enough cases that default is EMPTY, which shouldn't appear
-//       break;
-//     }
-//   }
+    default: //TODO: make enough cases that default is EMPTY, which shouldn't appear
+      break;
+    }
+  }
 
 };
