@@ -14,6 +14,7 @@ public:
     STATEMENT_BLOCK,
     ASSIGN,
     UNARY_STATEMENT,
+    LEAF_LITERAL,
     LEAF_VARIABLE
   };
 
@@ -24,13 +25,14 @@ private:
 
   //ASTNode* parent{nullptr};
   
-  std::string leaf_str_contents; //these two variables used only if the type is leaf_string/leaf_literal
-  //double leaf_literal_contents;
+  //only used for leaf nodes storing rote floats
+  double leaf_literal_contents;
   
 public:
   //Specify the node type on construction
   ASTNode(Type type/*, ASTNode* parent*/) : type(type)/*, parent(parent)*/ {}
   ASTNode(Type type, /*ASTNode* parent,*/ std::string value) : type(type), value(value)/*, parent(parent)*/ {}
+  ASTNode(float leaf_literal_contents) : type(LEAF_LITERAL), leaf_literal_contents(leaf_literal_contents)/*, parent(parent)*/ {}
 
 
   ASTNode(const ASTNode &) = default;
@@ -166,6 +168,12 @@ public:
       {
         //check symbol table for variable.
         return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
+        break;
+      }
+      case LEAF_LITERAL:
+      {
+        //check symbol table for variable.
+        return leaf_literal_contents;
         break;
       }
     default:
