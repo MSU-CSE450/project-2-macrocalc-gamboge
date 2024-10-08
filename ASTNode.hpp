@@ -13,11 +13,8 @@ public:
     EMPTY = 0,
     STATEMENT_BLOCK,
     ASSIGN,
-    //PRINT,
     UNARY_STATEMENT,
     LEAF_VARIABLE
-    //LEAF_STRING,
-    //LEAF_LITERAL,
   };
 
 private:
@@ -34,14 +31,7 @@ public:
   //Specify the node type on construction
   ASTNode(Type type/*, ASTNode* parent*/) : type(type)/*, parent(parent)*/ {}
   ASTNode(Type type, /*ASTNode* parent,*/ std::string value) : type(type), value(value)/*, parent(parent)*/ {}
-  // ASTNode(Type type, double leaf_literal_contents) 
-  //       : type(type), leaf_literal_contents(leaf_literal_contents) {
-  //       assert(type == LEAF_LITERAL && "Type must be LEAF_LITERAL for this constructor");
-  //   }
-  // ASTNode(Type type, const std::string& leaf_str_contents) 
-  //     : type(type), leaf_str_contents(leaf_str_contents) {
-  //     assert(type == LEAF_STRING && "Type must be LEAF_STRING for this constructor");
-  // }
+
 
   ASTNode(const ASTNode &) = default;
   ASTNode(ASTNode &&) = default;
@@ -55,8 +45,6 @@ public:
   
   //Get Info
   Type GetType() const {return type;}
-  //const double & GetLitValue() const {return leaf_literal_contents;}
-  //const std::string & GetLitString() const {return leaf_str_contents;}
 
 
   void AddChild(ASTNode node) {
@@ -174,24 +162,6 @@ public:
       }
       break;
     }
-    // case PRINT:
-    // {
-    //   if (GetChild(0).GetType() == LEAF_STRING) { //in case we're printing a string, and not an expression
-    //     std::cout << GetChild(0).GetLitString();
-    //   }
-    //   else {
-    //   std::cout << RunChild(0, symbols);
-    //   }
-    //   break;
-    // }
-    // case LEAF_STRING:
-    //   //this code won't be run; instead, the string's value is retrieved from the parent
-    //   break;
-    // case LEAF_LITERAL:
-    //   //return literal variable as double
-    //   //return leaf_literal_contents;
-    //   //see example code, they just do this.GetWords
-    //   break;
     case LEAF_VARIABLE:
       {
         //check symbol table for variable.
