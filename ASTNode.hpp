@@ -125,13 +125,15 @@ public:
       }
       else if(value == "/"){
         if (rightSide == 0) {
-          //err
+        std::cout << "ERROR! division by 0 :(" << std::endl;
+        std::cout << "dunno how to tell things to stop" << std::endl;
         }
         return leftSide / rightSide;
       }
       else if(value == "%"){
         if (rightSide == 0) {
-          //err
+        std::cout << "ERROR! modulo by 0 :(" << std::endl;
+        std::cout << "dunno how to tell things to stop" << std::endl;
         }
         return std::fmod(leftSide, rightSide);
       }
@@ -166,6 +168,8 @@ public:
         return leftSide || rightSide;
       }
       else {
+        std::cout << "ERROR! AST node expression has the operation " << value << ", which it can't understand" << std::endl;
+        std::cout << "dunno how to tell things to stop" << std::endl;
         //error
       }
       break;
@@ -196,7 +200,8 @@ public:
       }
     default:
       //empty
-      //ERROR.
+        std::cout << "ERROR! AST node with EMPTY type. This shouldn't happen!" << std::endl;
+        std::cout << "dunno how to tell things to stop" << std::endl;
 
       break;
     }
