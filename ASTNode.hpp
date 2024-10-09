@@ -15,7 +15,9 @@ public:
     ASSIGN,
     UNARY_STATEMENT,
     LEAF_LITERAL,
-    LEAF_VARIABLE
+    LEAF_VARIABLE,
+    IF_STATEMENT,
+    WHILE_STATEMENT
   };
 
 private:
@@ -189,6 +191,29 @@ public:
       {
         //check symbol table for variable.
         return leaf_literal_contents;
+        break;
+      }
+      case IF_STATEMENT:
+      {
+        assert(GetChildren().size() == 2 || GetChildren().size() == 3);
+        float expression = RunChild(0, symbols);
+        if (expression != 0) {
+          RunChild(1, symbols);
+        }
+        else if (GetChildren().size() == 3) {
+          RunChild(2, symbols);
+        }
+        return 0; //nothing should ever be able to use the return value of an if statement
+        break;
+      }
+      case WHILE_STATEMENT:
+      {
+        assert(GetChildren().size() == 2);
+        float expression = RunChild(0, symbols);
+        while (expression != 0) {
+          RunChild(1, symbols);
+        }
+        return 0; //nothing should ever be able to use the return value of a while loop
         break;
       }
     case EMPTY:
