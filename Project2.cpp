@@ -14,45 +14,70 @@
 
 //in the example code these were in the header file; I don't think we'll be using that here?
 size_t token_id{0};
-ASTNode root{ASTNode::STATEMENT_BLOCK};
+ASTNode root{ASTNode::EMPTY};
 ASTNode curr = root;
 SymbolTable symbols{};
 
-void Math(emplex::Token token){
-  if(emplex::Lexer::TokenName(token.id) == "**"){
-      ASTNode temp{ASTNode::STATEMENT_BLOCK, "**"};
-      temp.AddChild(root);
-      // curr = temp;
-    }
-    else if(emplex::Lexer::TokenName(token.id) == "*"){
-      ASTNode temp{ASTNode::STATEMENT_BLOCK, "*"};
-      temp.AddChild(root);
-      curr = temp;
-    }
-    else if(emplex::Lexer::TokenName(token.id) == "/"){
-      ASTNode temp{ASTNode::STATEMENT_BLOCK, "/"};
-      temp.AddChild(root);
-      curr = temp;
+bool ast = false;
 
-    }
-    else if(emplex::Lexer::TokenName(token.id) == "%"){
-      ASTNode temp{ASTNode::STATEMENT_BLOCK, "%"};
-      temp.AddChild(root);
-      curr = temp;
+bool variable = false;
+std::string var = "";
 
-    }
-    else if(emplex::Lexer::TokenName(token.id) == "+"){
-      ASTNode temp{ASTNode::STATEMENT_BLOCK, "+"};
-      temp.AddChild(root);
-      curr = temp;
+void UseAST(emplex::Token token){
+  if(token.lexeme == "="){
+    ASTNode temp{ASTNode::ASSIGN};
+    ASTNode child{ASTNode::LEAF_VARIABLE, var};
 
-    }
-    else if(emplex::Lexer::TokenName(token.id) == "-"){
-      ASTNode temp{ASTNode::STATEMENT_BLOCK, "-"};
-      temp.AddChild(root);
-      curr = temp;
+    temp.AddChild(child);
+    temp.AddChild(root);
 
+    curr = root;
+    root = temp;
+    
+  }
+  else if((token.id == 252 || token.id == 251 || token.id == 249) && variable == true){ //Int, Double, Variable
+    // curr.SetValue(token.lexeme);
+    if(token.id == 249){ //variable
+      std::cout << symbols.GetValue(token.lexeme) << std::endl;
+      // root.GetChild(1).SetValue(std::to_string(symbols.GetValue(token.lexeme)));
+    }else{
+      root.GetChild(1).SetValue(token.lexeme);
     }
+    
+  }
+  
+  // else if(token.lexeme == "**"){
+  //   ASTNode temp{ASTNode::STATEMENT_BLOCK, "**"};
+  //   root = temp;
+  // }
+  // else if(token.lexeme == "*"){
+  //   ASTNode temp{ASTNode::STATEMENT_BLOCK, "*"};
+  //   temp.AddChild(root);
+  //   root = temp;
+  // }
+  // else if(token.lexeme == "/"){
+  //   ASTNode temp{ASTNode::STATEMENT_BLOCK, "/"};
+  //   temp.AddChild(root);
+  //   root = temp;
+
+  // }
+  // else if(token.lexeme == "%"){
+  //   ASTNode temp{ASTNode::STATEMENT_BLOCK, "%"};
+  //   temp.AddChild(root);
+  //   root = temp;
+
+  // }
+  // else if(token.lexeme == "+"){
+  //   ASTNode temp{ASTNode::STATEMENT_BLOCK, "+"};
+  //   temp.AddChild(root);
+  //   root = temp;
+  // }
+  // else if(token.lexeme == "-"){
+  //   ASTNode temp{ASTNode::STATEMENT_BLOCK, "-"};
+  //   temp.AddChild(root);
+  //   root = temp;
+
+  // }
 }
 
 bool print = false;
@@ -64,7 +89,8 @@ void Print(emplex::Token token){
   } else if (token.lexeme != "("){
 
     //Print out with variables or normal string
-    if(strcmp(emplex::Lexer::TokenName(token.id), "ID_VARIABLE") == 0){
+
+    if(strcmp(emplex::Lexer::TokenName(token.id), "VARIABLE") == 0){
       std::cout << symbols.GetValue(token.lexeme);
     } else {
       std::cout << token.lexeme;
@@ -80,14 +106,42 @@ void Parse(std::vector<emplex::Token> tokens)
       continue;
     }
 
-    Math(token);
+    if(variable && var == ""){
+      var = token.lexeme;
+      continue;
+    }
 
+    UseAST(token);
+
+    //Print
     if(token.id == 255){
       print = true;
       continue;
     }
 
+    //Variable
+    if(token.id == 249 && token.lexeme == "var"){
+      variable = true;
+      continue;
+    }
+
+    //Semicolon
+    if(token.id == 254){
+      //Run AST Node from Root
+
+      if(root.GetChildren().size() > 0){
+        root.Run(symbols);
+
+      }
+      ASTNode temp{ASTNode::EMPTY};
+      var = "";
+      root = temp;
+      variable = false;
+      ast = false;
+      continue;
+    }
     if(print) Print(token);
+    
   }
 }
 

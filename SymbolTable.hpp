@@ -43,10 +43,10 @@ public:
     return false; 
   }
 
-  size_t AddVar(std::string name, size_t line_num) { 
+  size_t AddVar(std::string name, size_t line_num, double value) { 
     //Adds a variable to the highest scope
     auto& currScope = Table.back();
-    currScope[name] = 5;
+    currScope[name] = value;
     return 0; 
   }
 
