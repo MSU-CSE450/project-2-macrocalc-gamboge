@@ -11,13 +11,14 @@ class ASTNode {
 public:
   enum Type {
     EMPTY = 0,
-    STATEMENT_BLOCK,
+    EXPRESSION_BLOCK,
     ASSIGN,
-    UNARY_STATEMENT,
+    UNARY_EXPRESSION,
     LEAF_LITERAL,
     LEAF_VARIABLE,
     IF_STATEMENT,
-    WHILE_STATEMENT
+    WHILE_STATEMENT,
+    STATEMENT_LIST
   };
 
 private:
@@ -77,11 +78,14 @@ public:
   std::string TypeToString() const {
     switch (type) {
       case EMPTY: return "EMPTY";
-      case STATEMENT_BLOCK: return "STATEMENT_BLOCK";
+      case EXPRESSION_BLOCK: return "EXPRESSION_BLOCK";
       case ASSIGN: return "ASSIGN";
-      case UNARY_STATEMENT: return "UNARY_STATEMENT";
+      case UNARY_EXPRESSION: return "UNARY_EXPRESSION";
       case LEAF_LITERAL: return "LEAF_LITERAL";
       case LEAF_VARIABLE: return "LEAF_VARIABLE";
+      case IF_STATEMENT: return "IF_STATEMENT";
+      case WHILE_STATEMENT: return "WHILE_STATEMENT";
+      case STATEMENT_LIST: return "STATEMENT_LIST";
       default: return "UNKNOWN";
     }
   }
@@ -107,7 +111,7 @@ public:
       return assignVal;
       break;
     }
-    case UNARY_STATEMENT: {
+    case UNARY_EXPRESSION: {
       assert(GetChildren().size() == 1);
 
       double operand = RunChild(0, symbols);
@@ -118,7 +122,7 @@ public:
         return -operand;
       }
     }
-    case STATEMENT_BLOCK: {
+    case EXPRESSION_BLOCK: {
       assert(GetChildren().size() == 2);
 
       double leftSide = RunChild(0, symbols);
@@ -216,6 +220,12 @@ public:
         return 0; //nothing should ever be able to use the return value of a while loop
         break;
       }
+      case STATEMENT_LIST:
+      {
+        for (int i = 0; i < GetChildren().size(); i++) {
+          RunChild(i, symbols);
+        }
+      }
     case EMPTY:
       {
         //check symbol table for variable.
@@ -233,3 +243,55 @@ public:
   }
 
 };
+
+
+/*
+use of AST
+
+When you make an AST node, you'll define its type, and sometimes a value and children.
+It'll always return a float; you could imagine it ricocheting values up from the leaves to the root as the tree executes.
+The Value variable depends on the type, and so it'll be described with those.
+
+
+the types work like this:
+The EMPTY type should not be used. If an AST node with empty type is run, that's a problem
+
+
+nodes with the LEAF_VARIABLE type hold a variable name. Right now, variables in the symbol table are identified with strings (note 1)
+so the string representing the variable is held in the Value parameter in this case. When run, this node will return the current value
+of the variable it holds.
+
+(note 1: in class on wednesday the professor discussed using unique integer ids, not string ids, for symbol table entries. I
+think we could make do with string ids, but it might be a little harder.)
+
+
+nodes of the LEAF_LITERAL type are the only type which uses the leaf_literal_contents variable. To create one, call the consructor
+for ASTNode that takes only a float. When run, this returns that float. 
+
+
+nodes with the ASSIGN type should have two children. The left child should be an AST node of type LEAF_VARIABLE.
+when run, this node will set the variable held by that left child to whatever the right child returns when run.
+after doing this, it'll return whatever the variable was set to. (this type doesn't use the Value parameter)
+
+
+nodes of the type EXPRESSION_BLOCK are the most complex. They expect to have two children, and a Value. The value is the operator;
+stuff like +, *, **, >=, ect., just as a string. There's a big if/else block in this 
+file you can check if you want the list of possibilities.
+When run, this node type will preform the operation listed in Value on its left and right children, and return the result
+
+
+nodes of type UNARY_EXPRESSION are just like the above, but much simpler; less operations are supported and there's only one operator.
+
+
+nodes of type IF_STATEMENT have 2 or 3 children. given the expression: if (A) {B} else {C}, the children of this node are A, B, C in
+that order. Child C can be missing without consequence. This type doesn't return anything because I don't think that would make sense
+
+
+nodes of type WHILE_STATEMENT have 2 children. As above, for the statement: while (A) {B} the children are A, B in that order.
+Also no return value for the same reason.
+
+
+nodes of type STATEMENT_LIST have any number of children, where each child is some statement (probably a full line.) It runs each
+child in order. Normally, nodes of the IF_STATEMENT type can only run one statement if the condition is true. Using this, 
+multiple lines can be run in that case. This won't return anything either.
+*/
