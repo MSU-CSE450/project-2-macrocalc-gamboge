@@ -90,7 +90,7 @@ void Print(emplex::Token token){
 
     //Print out with variables or normal string
 
-    if(strcmp(emplex::Lexer::TokenName(token.id), "VARIABLE") == 0){
+    if(token.id == 249){/*strcmp(emplex::Lexer::TokenName(token.id), "VARIABLE") == 0*/ //this line was erroring so I changed it
       std::cout << symbols.GetValue(token.lexeme);
     } else {
       std::cout << token.lexeme;
