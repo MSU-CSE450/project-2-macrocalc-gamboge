@@ -17,7 +17,7 @@ size_t token_id{0};
 ASTNode root{ASTNode::EMPTY};
 ASTNode curr = root;
 SymbolTable symbols{};
-int lineNumber = 0;
+int lineNumber = 1;
 
 bool ast = false;
 
@@ -142,7 +142,11 @@ void Parse(std::vector<emplex::Token> tokens)
       continue;
     }
     if(print) Print(token);
-    
+
+    if (token.lexeme.find("\n") != std::string::npos)
+      {
+        lineNumber++;
+      }
   }
 }
 
