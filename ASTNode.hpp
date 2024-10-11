@@ -30,6 +30,25 @@ private:
   
   //only used for leaf nodes storing rote floats
   double leaf_literal_contents;
+
+
+/// @brief swaps around two of the children of this node
+/// @param lowChild 
+/// @param highChild 
+void Rebalance(ASTNode oldChild, ASTNode newChild) {
+
+}
+
+/// @brief Replaces a child with a new child, where the old one is a child of the new
+/// @param newChild new node to add
+/// @param index index of the old node
+void SwapInNewChild(ASTNode newChild, size_t index) {
+  ASTNode oldChild = GetChild(index);
+  children[index] = newChild;
+  newChild.AddChild(oldChild);
+}
+
+
   
 public:
   //Specify the node type on construction
@@ -250,9 +269,22 @@ public:
 /// @param symbols The symbol table.
 /// @return the result of the AST's execution
 float MakeTree(std::vector<emplex::Token> tokens, SymbolTable & symbols) {
+  //read token
+  //it had better alternate between var/literal, and operator
+  //note that there can also be a bonus unary operator sometimes
+  int VAR_ID = 249;
+  int LITERAL_ID = 251;
+  int ID_LOGICAL_OPERATOR = 243;
+  int ID_COMPARISION_OPERATOR = 244;
+  int ID_ASSIGN = 246;
+  int ID_MATH_OPERATOR = 247;
+  int ID_INT = 252; //TODO : fix these if they've changed!!!!!!!!!!
+  
+
 
   return 0;
 }
+
 
 /*
 use of AST
