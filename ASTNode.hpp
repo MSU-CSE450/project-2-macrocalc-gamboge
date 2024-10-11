@@ -245,6 +245,15 @@ public:
 };
 
 
+/// @brief creates an AST for an expression and runs it.
+/// @param tokens The vector of tokens, STARTING WITH the first token in the expression to parse. The tree will be considered complete upon encountering a ) or ; token
+/// @param symbols The symbol table.
+/// @return the result of the AST's execution
+float MakeTree(std::vector<emplex::Token> tokens, SymbolTable & symbols) {
+
+  return 0;
+}
+
 /*
 use of AST
 
