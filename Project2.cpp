@@ -17,10 +17,11 @@ size_t token_id{0};
 ASTNode root{ASTNode::EMPTY};
 ASTNode curr = root;
 SymbolTable symbols{};
+int lineNumber = 0;
 
 bool ast = false;
 
-bool variable = false;
+bool variable = false; // this indicates that a variable has been identified
 std::string var = "";
 
 void UseAST(emplex::Token token){
@@ -145,31 +146,61 @@ void Parse(std::vector<emplex::Token> tokens)
   }
 }
 
+std::string Fix_string(std::string str,SymbolTable symbols)
+{
+    size_t open_brace_pos = str.find('{');
+    size_t close_brace_pos = str.find('}');
+
+    // Check if both open and close braces exist
+    if (open_brace_pos != std::string::npos && close_brace_pos != std::string::npos && open_brace_pos < close_brace_pos) {
+        // Extract the substring between the braces
+        std::string key = str.substr(open_brace_pos + 1, close_brace_pos - open_brace_pos - 1);
+        auto value = symbols.GetValue(key);
+
+        // Check if the key exists in the unordered_map
+        
+        if (symbols.HasVar(key)) {
+            // Replace the substring inside the braces with the corresponding value from the map
+            str.replace(open_brace_pos, close_brace_pos - open_brace_pos + 1, std::to_string(value));
+        } else {
+            std::cerr << "Key '" << key << "' not found in the map!" << std::endl;
+        }
+    }
+
+    return str;
+}
 int main(int argc, char * argv[])
 {
-  if (argc != 2) {
-    std::cout << "Format: " << argv[0] << " [filename]" << std::endl;
-    exit(1);
-  }
+  // if (argc != 2) {
+  //   std::cout << "Format: " << argv[0] << " [filename]" << std::endl;
+  //   exit(1);
+  // }
 
-  std::string filename = argv[1];
+  // std::string filename = argv[1];
   
-  std::ifstream in_file(filename);
-  if (in_file.fail()) {
-    std::cout << "ERROR: Unable to open file '" << filename << "'." << std::endl;
-    exit(1);
-  }
+  // std::ifstream in_file(filename);
+  // if (in_file.fail()) {
+  //   std::cout << "ERROR: Unable to open file '" << filename << "'." << std::endl;
+  //   exit(1);
+  // }
 
-  //Initialize Tokens
-  emplex::Lexer lexer;
-  std::vector<emplex::Token> tokens = lexer.Tokenize(in_file);
+  // //Initialize Tokens
+  // emplex::Lexer lexer;
+  // std::vector<emplex::Token> tokens = lexer.Tokenize(in_file);
 
-  //Go through each token within file
+  // //Go through each token within file
 
-  Parse(tokens);
+  // Parse(tokens);
   
-  //Starts execution of AST Node which grew during Parse
-  // root.Run(symbols);
+  // //Starts execution of AST Node which grew during Parse
+  // // root.Run(symbols);
+
+  symbols.AddVar("Value",lineNumber,5.0);
+  lineNumber++;
+  symbols.AddVar("Answer",lineNumber,6.0);
+  std::string str = Fix_string("this is the answer: {Answer}",symbols);
+  std::cout<<str;
+
 }
 
 
