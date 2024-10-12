@@ -326,22 +326,20 @@ int main(int argc, char * argv[])
 }
 
 
-ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols);
+/// @brief creates an AST for an expression.
+/// @param tokens The vector of tokens.
+/// @param curr_token The first token to parse. Will be changed; after running, this will refer to the first token after the expression
+/// @param symbols The symbol table.
+/// @return an ASTNode, ready to be run
+ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols) {
 
-bool LexemeIsVarOrLit(emplex::Token token) {
-  return token.id == 249 || token.id == 252 || token.id == 251;
-}
-bool LexemeIsUnOp(emplex::Token token) {
-  std::string lexeme = token.lexeme;
-  return lexeme == "!" || lexeme == "-"; //note the repeated lexeme between these
-}
-bool LexemeIsBinOp(emplex::Token token) {
-  std::string lexeme = token.lexeme;
-  return lexeme == "**" || lexeme == "*" || lexeme == "/" || lexeme == "+" || lexeme == "-" || lexeme == "%" || lexeme == "<" || lexeme == "<=" || lexeme == ">" || lexeme == ">=" || lexeme == "==" || lexeme == "!=" || lexeme == "=" || lexeme == "&&" || lexeme == "||";
+  //return ParseTerm(tokens, curr_index, symbols);
+  return ParseAssign(tokens, curr_index, symbols);
+
 }
 
 ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
-  if  (LexemeIsUnOp(tokens[curr_index])) {
+  if  (tokens[curr_index].lexeme == "!" || tokens[curr_index].lexeme == "-") { //do we have a unary operator, eg negation
     ASTNode out = ASTNode(ASTNode::UNARY_EXPRESSION, tokens[curr_index].lexeme);
     if (tokens[curr_index+1].id == 249) { //variable
       ASTNode leaf = ASTNode(ASTNode::LEAF_VARIABLE, tokens[curr_index+1].lexeme);
@@ -383,29 +381,104 @@ ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
   }
 
 }
-
-/// @brief creates an AST for an expression.
-/// @param tokens The vector of tokens
-/// @param curr_token The first token to parse. Will be changed; after running, this will refer to the first token after the expression
-/// @param symbols The symbol table.
-/// @return an ASTNode, ready to be run
-ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols) {
-
-  return ParseTerm(tokens, curr_index, symbols);
-  //return ParseAssign(tokens, curr_index, symbols);
+ASTNode ParseExp(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  ASTNode lhs = ParseTerm(tokens, curr_index, symbols);
+  if (tokens[curr_index].lexeme == "**") {
+    curr_index++; //use **
+    ASTNode rhs = ParseExp(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, "**");
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    return out;
+  }
+  return lhs;
 }
+ASTNode ParseMult(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  ASTNode lhs = ParseMult(tokens, curr_index, symbols);
+  while (tokens[curr_index].lexeme == "*" || tokens[curr_index].lexeme == "/" || tokens[curr_index].lexeme == "%") {
+    std::string op = tokens[curr_index].lexeme;
+    curr_index++; //use token
+    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    lhs = out;  
+  }
+  return lhs;
+}
+ASTNode ParseAdd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  ASTNode lhs = ParseMult(tokens, curr_index, symbols);
+  while (tokens[curr_index].lexeme == "+" || tokens[curr_index].lexeme == "-") {
+    std::string op = tokens[curr_index].lexeme;
+    curr_index++; //use token
+    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    lhs = out;  
+  }
+  return lhs;
+}
+ASTNode ParseInequal(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  ASTNode lhs = ParseAdd(tokens, curr_index, symbols);
+  if (tokens[curr_index].lexeme == "<" || tokens[curr_index].lexeme == "<=" || tokens[curr_index].lexeme == ">" || tokens[curr_index].lexeme == ">=") {
+    std::string op = tokens[curr_index].lexeme;
+    curr_index++; //use token
+    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    return out;
+  }
+  return lhs;
+}
+ASTNode ParseIsEqual(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  ASTNode lhs = ParseInequal(tokens, curr_index, symbols);
+  if (tokens[curr_index].lexeme == "==" || tokens[curr_index].lexeme == "!=") {
+    std::string op = tokens[curr_index].lexeme;
+    curr_index++; //use == or !=
+    ASTNode rhs = ParseInequal(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    return out;
+  }
+  return lhs;
+}
+ASTNode ParseLogicAnd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  ASTNode lhs = ParseIsEqual(tokens, curr_index, symbols);
+  while (tokens[curr_index].lexeme == "&&") {
+    curr_index++; //use &&
+    ASTNode rhs = ParseLogicAnd(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, "&&");
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    lhs = out;  
+  }
+  return lhs;
+}
+ASTNode ParseLogicOr(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
 
-void ParseExp(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
-void ParseMult(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
-void ParseAdd(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
-void ParseInequal(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
-void ParseIsEqual(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
-void ParseLogicAnd(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
-void ParseLogicOr(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+  ASTNode lhs = ParseLogicAnd(tokens, curr_index, symbols);
+  while (tokens[curr_index].lexeme == "||") {
+    curr_index++; //use ||
+    ASTNode rhs = ParseLogicOr(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, "||");
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    lhs = out;  //if this is somehow a reference and breaks the node I just made I might end up on the news
+  }
+  return lhs;
+}
 ASTNode ParseAssign(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
-  
-  //ASTNode lhs = ParseLogicOr(tokens, curr_index, symbols);
-  //if (tokens[curr_index].lexeme == "=") {
-  //}
-  //return lhs;
+  ASTNode lhs = ParseLogicOr(tokens, curr_index, symbols);
+  if (tokens[curr_index].lexeme == "=") {
+    curr_index++; //use =
+    ASTNode rhs = ParseAssign(tokens, curr_index, symbols);
+    ASTNode out = ASTNode(ASTNode::ASSIGN);
+    out.AddChild(lhs);
+    out.AddChild(rhs);
+    return out;
+  }
+  return lhs;
 }
