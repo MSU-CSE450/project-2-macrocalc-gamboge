@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "SymbolTable.hpp"
+#include "lexer.hpp"
 
 class ASTNode {
 public:
@@ -31,7 +32,7 @@ private:
   //only used for leaf nodes storing rote floats
   double leaf_literal_contents;
 
-
+/*
 /// @brief swaps around two of the children of this node
 /// @param lowChild 
 /// @param highChild 
@@ -46,7 +47,7 @@ void SwapInNewChild(ASTNode newChild, size_t index) {
   ASTNode oldChild = GetChild(index);
   children[index] = newChild;
   newChild.AddChild(oldChild);
-}
+}*/
 
 
   
@@ -264,26 +265,8 @@ public:
 };
 
 
-/// @brief creates an AST for an expression and runs it.
-/// @param tokens The vector of tokens, STARTING WITH the first token in the expression to parse. The tree will be considered complete upon encountering a ) or ; token
-/// @param symbols The symbol table.
-/// @return the result of the AST's execution
-float MakeTree(std::vector<emplex::Token> tokens, SymbolTable & symbols) {
-  //read token
-  //it had better alternate between var/literal, and operator
-  //note that there can also be a bonus unary operator sometimes
-  int VAR_ID = 249;
-  int LITERAL_ID = 251;
-  int ID_LOGICAL_OPERATOR = 243;
-  int ID_COMPARISION_OPERATOR = 244;
-  int ID_ASSIGN = 246;
-  int ID_MATH_OPERATOR = 247;
-  int ID_INT = 252; //TODO : fix these if they've changed!!!!!!!!!!
-  
 
 
-  return 0;
-}
 
 
 /*

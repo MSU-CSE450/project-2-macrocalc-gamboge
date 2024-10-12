@@ -209,35 +209,85 @@ int main(int argc, char * argv[])
 
 
 
-// ASTNode ParseDeclare() {
-//   /*auto type_token = tokens[token_id++];
-  
-//   std::string var_name{};
+/// @brief creates an AST for an expression.
+/// @param tokens The vector of tokens
+/// @param curr_token The first token to parse. Will be changed; after running, this will refer to the first token after the expression
+/// @param symbols The symbol table.
+/// @return an ASTNode, ready to be run
+ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols) {
 
-//   switch (type_token) {
-//   using namespace emplex;
-//   case Lexer::ID_TYPE:  // @CAO This should be called LIST.
-//     if (tokens[token_id] != Lexer::ID_ID) {
-//       Error(tokens[token_id].line_id, "Expected identifier in variable declaration.");
-//     }
-//     var_name = tokens[token_id];
-//     size_t var_id = symbols.AddVar(tokens[token_id].line_id, var_name);
-//     ++token_id;
-//     if (tokens[token_id] == ';') return ASTNode{};
+  return ParseTerm(tokens, curr_index, symbols);
+  //return ParseAssign(tokens, curr_index, symbols);
 
-//     if (tokens[token_id] != '=') {
-//       Error(line tokens[token_id].line_id, "Expected ';' or '='.");
-//     }
-//     ++token_id;
+}
 
-//     auto rhs_node = ParseExpression();
 
-//     ASTNode out_node(ASTNode::ASSIGN);
-//     out_node.children.push_back(MakeVarNode(var_id));
-//     out_node.children.push_back(rhs_node);
+ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  if  (LexemeIsUnOp(tokens[curr_index])) {
+    ASTNode out = ASTNode(ASTNode::UNARY_EXPRESSION, tokens[curr_index].lexeme);
+    if (tokens[curr_index+1].id == 249) { //variable
+      ASTNode leaf = ASTNode(ASTNode::LEAF_VARIABLE, tokens[curr_index+1].lexeme);
+      out.AddChild(leaf);
+
+      curr_index += 2;
+      return out;
+    }
+    else if (tokens[curr_index+1].id == 252 || tokens[curr_index+1].id == 251) {//double; int. Same difference.
+      ASTNode leaf = ASTNode(std::stof(tokens[curr_index+1].lexeme));
+      out.AddChild(leaf);
+      
+      curr_index += 2;
+      return out;
+    }
+  }
+
+  else if (tokens[curr_index].id == 249) { //variable
+    ASTNode leaf = ASTNode(ASTNode::LEAF_VARIABLE, tokens[curr_index].lexeme);
     
-//     return out_node;
-//   }*/
+    curr_index += 1;
+    return leaf;
+  }
+  else if (tokens[curr_index].id == 252 || tokens[curr_index].id == 251) {//double; int. Same difference.
+    ASTNode leaf = ASTNode(std::stof(tokens[curr_index].lexeme));
+    
+    curr_index += 1;
+    return leaf;
+  }
 
-//   return ASTNode{ASTNode::EMPTY}; //I think?
-// }
+  else if (tokens[curr_index].lexeme == "(") {
+    curr_index++;//use (
+    ASTNode out = ParseExpression(tokens, curr_index, symbols);
+    if (tokens[curr_index].lexeme != ")") {
+      //error
+    }
+    curr_index++;//use )
+    return out;
+  }
+
+}
+void ParseExp(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+void ParseMult(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+void ParseAdd(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+void ParseInequal(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+void ParseIsEqual(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+void ParseLogicAnd(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+void ParseLogicOr(std::vector<emplex::Token> tokens, SymbolTable & symbols){}
+ASTNode ParseAssign(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+  
+  //ASTNode lhs = ParseLogicOr(tokens, curr_index, symbols);
+  //if (tokens[curr_index].lexeme == "=") {
+  //}
+  //return lhs;
+}
+
+bool LexemeIsVarOrLit(emplex::Token token) {
+  return token.id == 249 || token.id == 252 || token.id == 251;
+}
+bool LexemeIsUnOp(emplex::Token token) {
+  std::string lexeme = token.lexeme;
+  return lexeme == "!" || lexeme == "-"; //note the repeated lexeme between these
+}
+bool LexemeIsBinOp(emplex::Token token) {
+  std::string lexeme = token.lexeme;
+  return lexeme == "**" || lexeme == "*" || lexeme == "/" || lexeme == "+" || lexeme == "-" || lexeme == "%" || lexeme == "<" || lexeme == "<=" || lexeme == ">" || lexeme == ">=" || lexeme == "==" || lexeme == "!=" || lexeme == "=" || lexeme == "&&" || lexeme == "||";
+}
