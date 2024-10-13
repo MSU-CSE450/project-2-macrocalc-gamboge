@@ -186,10 +186,10 @@ public:
       else if(value == ">="){
         return leftSide >= rightSide;
       }
-      else if(value == "=="){
+      else if(value == "== " ){
         return leftSide == rightSide;
       }
-      else if(value == "!="){
+      else if(value == " != "){
         return leftSide != rightSide;
       }
       else if(value == "&&"){
