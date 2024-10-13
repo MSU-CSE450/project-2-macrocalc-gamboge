@@ -27,6 +27,8 @@ std::vector<int> scope; //Used to help restart while loop
 
 std::set<int> ids = {240, 241, 242, 255};
 
+bool oneLine = false;
+
 
 //String Helper
 std::string RemoveTrailingZeros(std::string str) {
@@ -174,7 +176,7 @@ ASTNode ParseMult(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
   while (tokens[curr_index].lexeme == "*" || tokens[curr_index].lexeme == "/" || tokens[curr_index].lexeme == "%") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use token
-    ASTNode rhs = ParseMult(tokens, curr_index, symbols);
+    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
     ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
     out.AddChild(lhs);
     out.AddChild(rhs);
@@ -321,11 +323,12 @@ void Print(){
       buildAST = true;
       if(tokens[token_count + 1].id == 253){
         std::cout << Fix_string(tokens[token_count + 1].lexeme, symbols) << std::endl;
+        while(tokens[token_count].lexeme != ";"){
+          token_count++;
+        };
       } else {
         std::cout << ParseExpression(tokens, token_count, symbols).Run(symbols) << std::endl;
       }
-      
-
       break;
       
     }
@@ -351,43 +354,59 @@ void If(){
   */
 
   bool buildAST = false;
-  while(token_count < tokens.size()){
+  std::vector<int> skipping;
+
+  while(token_count < tokens.size()){    
+
+    token_count++;
     emplex::Token token = tokens[token_count];
+    
 
     if (ids.find(token.id) != ids.end()) {
         break;
     }
 
-    token_count++;
-
-    if(token.lexeme == ")"){
-      if(SampleASTOutput() == false){
-        //Skips If-Else
-        while(token_count < tokens.size()){
-          emplex::Token token = tokens[token_count];
-          if(token.lexeme == "}" || token.lexeme == ";"){
-            token_count++;
-            break;
-          }
-          token_count++;
-         }
-
+    if (token.lexeme == "("){
+      buildAST = true;
+      token_count = token_count + 1;
+      if(ParseExpression(tokens, token_count, symbols).Run(symbols) == 1){
+        if(tokens[token_count + 1].lexeme == "{"){
+          symbols.PushScope();
+        }
       } else {
-        symbols.PushScope();
+        if(tokens[token_count + 1].lexeme != "{"){
+          token_count++;
+
+          //Skip to end
+          while(tokens[token_count].lexeme != ";"){
+            token_count++;
+          }
+
+          break;
+        }
+
+        //Skip to end
+        std::vector<int> skipping;
+        skipping.push_back(1);
+        while(tokens[token_count].lexeme != "}" && skipping.size() > 0){
+          token_count++;
+          if(tokens[token_count].lexeme == "{"){
+            skipping.push_back(1);
+          }
+          else if(tokens[token_count].lexeme == "}"){
+            skipping.pop_back();
+          }
+        }
+
+        break;
       }
 
-      token_count = token_count - 1;
       break;
-    } 
-    else if (buildAST){
-      //Add to AST Node Here
-
+      
     }
+
+    token_count++;
     
-    if (token.lexeme != "("){
-      buildAST = true;
-    }
-
   }
 }
 
@@ -403,44 +422,65 @@ void While(){
   */
 
   bool buildAST = false;
-  while(token_count < tokens.size()){
+  std::vector<int> skipping;
+
+  while(token_count < tokens.size()){    
+    token_count++;
     emplex::Token token = tokens[token_count];
 
     if (ids.find(token.id) != ids.end()) {
         break;
     }
 
-    token_count++;
+    if (token.lexeme == "("){
+      buildAST = true;
+      token_count = token_count + 1;
+      if(ParseExpression(tokens, token_count, symbols).Run(symbols) == 1){
+        if(tokens[token_count + 1].lexeme == "{"){
+          symbols.PushScope();
+          break;
+        } else {
+          oneLine = true;
+        }
 
-    if(token.lexeme == ")"){
-      if(SampleASTOutput() == false){
-        //Skips While
-        while(token_count < tokens.size()){
-          emplex::Token token = tokens[token_count];
-          if(token.lexeme == "}" || token.lexeme == ";"){
-            token_count++;
-            break;
+        break;
+      } else {
+        oneLine = false;
+        if(tokens[token_count + 1].lexeme != "{"){
+          token_count++;
+
+          //Skip to end
+          while(tokens[token_count].lexeme != ";"){
+            continue;
           }
 
+          break;
+        }
+
+        //Skip to end
+        std::vector<int> skipping;
+        skipping.push_back(1);
+        while(tokens[token_count].lexeme != "}" && skipping.size() > 0){
           token_count++;
-         }
+          if(tokens[token_count].lexeme == "{"){
+            skipping.push_back(1);
+          }
+          else if(tokens[token_count].lexeme == "}"){
+            skipping.pop_back();
+          }
+        }
 
-      } else {
-        symbols.PushScope();
+        break;
       }
+      
+      
 
-      token_count = token_count + 1;
       break;
-    } 
-    else if (buildAST){
-      //Add to AST Node Here
+      
     }
+
+    token_count++;
     
-    if (token.lexeme != "("){
-      buildAST = true;
-
-    }
-
   }
 }
 
@@ -497,26 +537,34 @@ void CheckForKey(emplex::Token token){
 
   scope is meant to allow program to deal with nests
   */
-  
   //If-Else
-  if(token.lexeme == "if"){
+  if(token.lexeme == "if" || token.lexeme == "if "){
     scope.push_back(-1);
     If();
   }
   //While
-  if(token.lexeme ==  "while"){
+  else if(token.lexeme ==  "while" || token.lexeme == "while "){
     scope.push_back(token_count);
     While();
   }
 
   //Print
-  if(token.lexeme == "print"){
+  else if(token.lexeme == "print"){
     Print();
   }
 
   //Variable
-  if(token.lexeme == "var"){
+  else if(token.lexeme == "var"){
     Variable();
+  }
+
+  else if(token.id == 249){
+    std::string temp = token.lexeme;
+    token_count = token_count + 2;
+    float t = ParseExpression(tokens, token_count, symbols).Run(symbols);
+    symbols.SetValue(temp, t);
+
+    token_count++;
   }
 }
 
@@ -528,11 +576,9 @@ void Parse()
 
   Runs through each token, in special cases (ex. Key Words) uses helper functions
   */
-
   while(token_count < tokens.size()){
     //Initializes current working token, allows next one in next loop
     emplex::Token token = tokens[token_count];
-
 
     //Comment Line or whitespace - Skips
     if(token.id == 248 || token.id == 250){
@@ -543,7 +589,12 @@ void Parse()
     //Check for Key Word - If, While, Print, Var
     CheckForKey(token);
 
-    //End of Scope
+    //Beginning of Scope
+    if(token.lexeme == "{"){
+      symbols.PushScope(); //Adds to top layer of symbol tree
+      scope.push_back(-1);
+    }
+
     if(token.lexeme == "}"){
       symbols.PopScope(); //Remove top layer of symbol tree
 
@@ -554,6 +605,19 @@ void Parse()
       if(temp != -1){
         token_count = temp - 1;
         token = tokens[token_count];
+      }
+    }
+
+    if(token.lexeme == ";" &&  oneLine){
+      oneLine = false;
+      //If ending while loop, restarts from the top
+      int temp = scope.back();
+      scope.pop_back(); 
+
+      if(temp != -1){
+        token_count = temp - 1;
+        token = tokens[token_count];
+
       }
     }
 
