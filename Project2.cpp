@@ -174,7 +174,7 @@ ASTNode ParseMult(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
   while (tokens[curr_index].lexeme == "*" || tokens[curr_index].lexeme == "/" || tokens[curr_index].lexeme == "%") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use token
-    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
+    ASTNode rhs = ParseMult(tokens, curr_index, symbols);
     ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
     out.AddChild(lhs);
     out.AddChild(rhs);
