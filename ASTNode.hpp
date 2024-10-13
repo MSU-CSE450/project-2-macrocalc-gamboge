@@ -146,7 +146,10 @@ public:
       assert(GetChildren().size() == 2);
 
       double leftSide = RunChild(0, symbols);
-      double rightSide = RunChild(1, symbols);
+      double rightSide;
+      if (value != "||" && value != "&&") {
+        rightSide = RunChild(1, symbols);
+      }
       double result;
       if(value == "**"){
         return std::pow(leftSide, rightSide);
@@ -192,12 +195,22 @@ public:
       else if(value == " != "){
         return leftSide != rightSide;
       }
+
       else if(value == "&&"){
+        if (!leftSide) {
+          return false;
+        }
+        rightSide = RunChild(1, symbols);
         return leftSide && rightSide;
       }
       else if(value == "||"){
+        if (leftSide) {
+          return true;
+        }
+        rightSide = RunChild(1, symbols);
         return leftSide || rightSide;
       }
+
       else {
         // std::cout << "ERROR! AST node expression has the operation " << value << ", which it can't understand" << std::endl;
         // std::cout << "dunno how to tell things to stop" << std::endl;
