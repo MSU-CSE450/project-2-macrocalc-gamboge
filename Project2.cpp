@@ -117,7 +117,7 @@ ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, 
 ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   if  (tokens[curr_index].lexeme == "!" || tokens[curr_index].lexeme == "-") { //do we have a unary operator, eg negation
     ASTNode out = ASTNode(ASTNode::UNARY_EXPRESSION, tokens[curr_index].lexeme);
-    if (tokens[curr_index+1].id == 249) { //variable
+    /*if (tokens[curr_index+1].id == 249) { //variable
       ASTNode leaf = ASTNode(ASTNode::LEAF_VARIABLE, tokens[curr_index+1].lexeme);
       out.AddChild(leaf);
 
@@ -130,7 +130,11 @@ ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
       
       curr_index += 2;
       return out;
-    }
+    }*/
+   curr_index++;
+   ASTNode rhs = ParseTerm(tokens, curr_index, symbols);
+   out.AddChild(rhs);
+   return out;
   }
 
   else if (tokens[curr_index].id == 249) { //variable
