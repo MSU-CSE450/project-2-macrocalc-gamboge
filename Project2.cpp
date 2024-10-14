@@ -29,6 +29,7 @@ std::set<int> ids = {240, 241, 242, 255};
 
 bool oneLine = false;
 
+bool goToElse = false;
 
 //String Helper
 std::string RemoveTrailingZeros(std::string str) {
@@ -110,20 +111,14 @@ ASTNode ParseAdd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolT
 /// @return an ASTNode, ready to be run
 ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols) {
   // Pass the filtered tokens to ParseAssign
-
-  ASTNode out = ParseAssign(tokens, curr_index, symbols);
-  if (tokens[curr_index].lexeme==">" || tokens[curr_index].lexeme=="<")
-  {
-    exit(1);
-  }
-  return out;
+  return ParseAssign(tokens, curr_index, symbols);
 
 }
 
 ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   if  (tokens[curr_index].lexeme == "!" || tokens[curr_index].lexeme == "-") { //do we have a unary operator, eg negation
     ASTNode out = ASTNode(ASTNode::UNARY_EXPRESSION, tokens[curr_index].lexeme);
-    /*if (tokens[curr_index+1].id == 249) { //variable
+    if (tokens[curr_index+1].id == 249) { //variable
       ASTNode leaf = ASTNode(ASTNode::LEAF_VARIABLE, tokens[curr_index+1].lexeme);
       out.AddChild(leaf);
 
@@ -136,11 +131,7 @@ ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
       
       curr_index += 2;
       return out;
-    }*/
-   curr_index++;
-   ASTNode rhs = ParseTerm(tokens, curr_index, symbols);
-   out.AddChild(rhs);
-   return out;
+    }
   }
 
   else if (tokens[curr_index].id == 249) { //variable
@@ -199,7 +190,7 @@ ASTNode ParseAdd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolT
   while (tokens[curr_index].lexeme == "+" || tokens[curr_index].lexeme == "-") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use token
-    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
+    ASTNode rhs = ParseMult(tokens, curr_index, symbols);
     ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
     out.AddChild(lhs);
     out.AddChild(rhs);
@@ -209,6 +200,7 @@ ASTNode ParseAdd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolT
 }
 ASTNode ParseInequal(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   ASTNode lhs = ParseAdd(tokens, curr_index, symbols);
+  // std::cout << "'" << tokens[curr_index].lexeme << "'" << std::endl;
   if (tokens[curr_index].lexeme == "<" || tokens[curr_index].lexeme == "<=" || tokens[curr_index].lexeme == ">" || tokens[curr_index].lexeme == ">=") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use token
@@ -235,19 +227,21 @@ ASTNode ParseIsEqual(std::vector<emplex::Token> tokens, size_t & curr_index, Sym
   return lhs;
 }
 ASTNode ParseLogicAnd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
-  
   ASTNode lhs = ParseIsEqual(tokens, curr_index, symbols);
 
-  size_t temp = curr_index;
-
-  if(lhs.Run(symbols) < 1){
-    curr_index = temp;
-    return lhs;
-  }
-
-  curr_index = temp;
 
   while (tokens[curr_index].lexeme == "&&") {
+    size_t temp = curr_index;
+    float val = lhs.Run(symbols);
+
+    // std::cout << val << std::endl;
+    if(lhs.Run(symbols) > 1){
+      curr_index = temp;
+      return lhs;
+    }
+
+    curr_index = temp;
+
     curr_index++; //use &&
     ASTNode rhs = ParseLogicAnd(tokens, curr_index, symbols);
     ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, "&&");
@@ -260,17 +254,17 @@ ASTNode ParseLogicAnd(std::vector<emplex::Token> tokens, size_t & curr_index, Sy
 ASTNode ParseLogicOr(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   ASTNode lhs = ParseLogicAnd(tokens, curr_index, symbols);
 
-  size_t temp = curr_index;
-
-  if(lhs.Run(symbols) != 0){
-    curr_index = temp;
-    return lhs;
-  }
-
-  curr_index = temp;
-
-
   while (tokens[curr_index].lexeme == "||") {
+    size_t temp = curr_index;
+
+    if(lhs.Run(symbols) == 1){
+      curr_index = temp;
+      return lhs;
+    }
+
+    curr_index = temp;
+
+
     curr_index++; //use ||
     ASTNode rhs = ParseLogicOr(tokens, curr_index, symbols);
     ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, "||");
@@ -348,11 +342,6 @@ void Print(){
 
     
   }
-  if (tokens[token_count].lexeme != ";"){
-    std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
-      exit(1);
-  }
-  
 }
 
 
@@ -439,7 +428,7 @@ void While(){
   bool buildAST = false;
   std::vector<int> skipping;
 
-  while(token_count < tokens.size()){    
+  while(token_count < tokens.size()){  
     token_count++;
     emplex::Token token = tokens[token_count];
 
@@ -449,23 +438,21 @@ void While(){
 
     if (token.lexeme == "("){
       buildAST = true;
-      token_count = token_count + 1;
+      token_count++;
       if(ParseExpression(tokens, token_count, symbols).Run(symbols) == 1){
-        if(tokens[token_count + 1].lexeme == "{"){
+        if(tokens[token_count].lexeme == "{"){
           symbols.PushScope();
-          break;
         } else {
+          // token_count--;
           oneLine = true;
         }
 
         break;
       } else {
-        oneLine = false;
         if(tokens[token_count + 1].lexeme != "{"){
-          token_count++;
-
           //Skip to end
           while(tokens[token_count].lexeme != ";"){
+            token_count++;
             continue;
           }
 
@@ -512,52 +499,24 @@ void Variable(){
   std::vector<emplex::Token> rhs;
 
   while(token_count < tokens.size()){
-        //std::cout<<tokens[token_count].lexeme<<std::endl;
-
     token = tokens[token_count + 1];
 
-    
+
     if (ids.find(token.id) != ids.end()) {
         break;
     }
 
     
-    if(tokens[token_count].lexeme == ";"){
-      if (tokens[token_count-1].lexeme == "var")
-      {
-      std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
-      
-      exit(1);
-      }
+    if(token.lexeme == ";"){
       break;
-    }
-
-
-    if(tokens[token_count].lexeme == "="){
-      
-    }
-
-    if (tokens[token_count].lexeme == "var" && tokens[token_count+1].id != 249)
-    {
-            std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
-      
-      exit(1);
     }
 
     //Begin AST Build Here
     if(token.id == 249 && set == false){
-
-
-
       std::string variable_name = "";
       variable_name = token.lexeme;
 
       token_count = token_count + 1;
-      if (symbols.HasVarInScope(variable_name)==true)
-      {
-      std::cout<<"ERROR: Redeclaration Error at line "<<lineNumber<<std::endl;
-      exit(1);
-      }
       symbols.AddVar(variable_name, 1, ParseExpression(tokens, token_count, symbols).Run(symbols));
 
       break;
@@ -571,7 +530,7 @@ void Variable(){
 }
 
 
-void CheckForKey(emplex::Token token){
+void CheckForKey(emplex::Token &token){
   /*
   Runs on Each Token, checks if key word If, While, Print, Var
 
@@ -584,6 +543,38 @@ void CheckForKey(emplex::Token token){
   if(token.lexeme == "if" || token.lexeme == "if "){
     scope.push_back(-1);
     If();
+  }
+  else if(token.lexeme == "else" || token.lexeme == "else "){
+    if(goToElse){
+      scope.push_back(-1);
+      token_count++;
+      token_count++;
+    } else {
+      if(tokens[token_count + 1].lexeme != "{"){
+        //Skip to end
+        while(tokens[token_count].lexeme != ";"){
+          token_count++;
+          continue;
+        }
+
+      } else {
+        //Skip to end
+        std::vector<int> skipping;
+        skipping.push_back(1);
+        while(tokens[token_count].lexeme != "}" && skipping.size() > 0){
+          token_count++;
+          if(tokens[token_count].lexeme == "{"){
+            skipping.push_back(1);
+          }
+          else if(tokens[token_count].lexeme == "}"){
+            skipping.pop_back();
+          }
+        }
+      }
+
+    }
+    
+    
   }
   //While
   else if(token.lexeme ==  "while" || token.lexeme == "while "){
@@ -598,52 +589,6 @@ void CheckForKey(emplex::Token token){
 
   //Variable
   else if(token.lexeme == "var"){
-    int temp_token_count = token_count; // makes a new counter 
-    std::vector<std::string > all_tokens; // takes all tokens
-    int var_count = 0; // number of variables
-    do {
-      all_tokens.push_back(tokens[temp_token_count].lexeme);
-      if (tokens[temp_token_count].id == 249)
-      {
-          var_count++;  // add variables
-      }
-      temp_token_count++;
-    } while (tokens[temp_token_count].lexeme != ";");
-    auto it = std::find(all_tokens.begin(), all_tokens.end(), "=");
-    if(var_count>=3 && it == all_tokens.end()) // if there are 3 or more variables without = then there has to 
-                                                // be a syntax error
-    {
-      std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
-      exit(1);
-    }
-
-    int temp =0;
-    while(temp == 0)
-    {
-    //std::cout<<"entered1"<<std::endl;
-    int temp_token_count = token_count;
-      do{
-        temp_token_count++;
-      }while(tokens[temp_token_count].lexeme != "=");
-    
-      //std::vector<std::string> vars;
-      do {
-      //std::cout<<"entered2"<<std::endl;
-      if (tokens[temp_token_count].id == 249)
-      {
-              //std::cout<<tokens[temp_token_count].lexeme<<std::endl;
-
-          if (symbols.HasVarInScope(tokens[temp_token_count].lexeme) == false)
-          {
-              std::cout<<"ERROR: Unknown Identifier at line: "<<lineNumber<<std::endl;
-              exit(1);
-          }
-      }
-      temp_token_count++;
-    } while (tokens[temp_token_count].lexeme != ";");
-      temp=1;
-    }
-
     Variable();
   }
 
@@ -652,8 +597,7 @@ void CheckForKey(emplex::Token token){
     token_count = token_count + 2;
     float t = ParseExpression(tokens, token_count, symbols).Run(symbols);
     symbols.SetValue(temp, t);
-
-    token_count++;
+    token = tokens[token_count];
   }
 }
 
@@ -685,8 +629,8 @@ void Parse()
     }
 
     if(token.lexeme == "}"){
-      symbols.PopScope(); //Remove top layer of symbol tree
-
+      // std::cout << symbols.Table.size() << std::endl;
+    
       //If ending while loop, restarts from the top
       int temp = scope.back();
       scope.pop_back(); 
@@ -694,20 +638,25 @@ void Parse()
       if(temp != -1){
         token_count = temp - 1;
         token = tokens[token_count];
+      } else {
+        symbols.PopScope();
       }
-    }
-
-    if(token.lexeme == ";" &&  oneLine){
+    } else {
+      if(oneLine && token.lexeme == ";"){
       oneLine = false;
+      
       //If ending while loop, restarts from the top
       int temp = scope.back();
       scope.pop_back(); 
 
       if(temp != -1){
         token_count = temp - 1;
-        token = tokens[token_count];
-
+        token = tokens[token_count + 1];
+        continue;
       }
+
+      
+    }
     }
 
     //Line Numbers

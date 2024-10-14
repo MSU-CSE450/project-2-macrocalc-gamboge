@@ -169,6 +169,7 @@ public:
         std::cout << "ERROR! modulo by 0 :(" << std::endl;
         std::cout << "dunno how to tell things to stop" << std::endl;
         }
+        
         return std::fmod(leftSide, rightSide);
       }
       else if(value == "+"){

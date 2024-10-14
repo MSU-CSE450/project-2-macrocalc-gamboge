@@ -12,11 +12,13 @@ private:
   
   // HINT: YOU CAN CONVERT EACH VARIABLE NAME TO A UNIQUE ID TO CLEANLY DEAL
   //       WITH SHADOWING AND LOOKING UP VARIABLES LATER.
+  
+
+public:
   std::vector<std::unordered_map<std::string, double>> Table {
         {{"1", 1.90}, {"2", 2.3}}
     };
 
-public:
   // CONSTRUCTOR, ETC HERE
   SymbolTable(){}
 
@@ -32,7 +34,6 @@ public:
   // (NEED REAL FUNCTION BODIES FOR THESE IF YOU WANT TO USE THEM)
   bool HasVar(std::string name) const { 
     //Checks if a variable is present in the Symbol Table
-
     for (auto it = Table.rbegin(); it != Table.rend(); ++it)
     {
       if (it->find(name) != it->end()) {
@@ -43,16 +44,6 @@ public:
     return false; 
   }
 
-bool HasVarInScope(std::string name) const { // swabhan wrote this function
-    // Check if a variable is present in the top level (last entry) of the Symbol Table
-    if (!Table.empty()) {
-        const auto& topLevel = Table.back();  // Access the top level (last entry)
-        if (topLevel.find(name) != topLevel.end()) {
-            return true;
-        }
-    }
-    return false; 
-}
   size_t AddVar(std::string name, size_t line_num, double value) { 
     //Adds a variable to the highest scope
     auto& currScope = Table.back();
@@ -62,9 +53,6 @@ bool HasVarInScope(std::string name) const { // swabhan wrote this function
 
   double GetValue(std::string name) const {
    //Gets a key value pair in the highest scope
-
-    assert(HasVar(name));
-
     for (auto it = Table.rbegin(); it != Table.rend(); ++it)
     {
       auto found = it->find(name);
@@ -78,7 +66,7 @@ bool HasVarInScope(std::string name) const { // swabhan wrote this function
 
   void SetValue(std::string name, double value) {
     //Updates a key value pair in the highest scope that variable is present
-    assert(HasVar(name));
+    // assert(HasVar(name));
 
     for (auto it = Table.rbegin(); it != Table.rend(); ++it)
     {
