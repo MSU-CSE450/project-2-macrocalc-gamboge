@@ -342,6 +342,11 @@ void Print(){
 
     
   }
+  if (tokens[token_count].lexeme != ";"){
+    std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
+      exit(1);
+  }
+  
 }
 
 
@@ -509,16 +514,37 @@ void Variable(){
     }
 
     
-    if(token.lexeme == ";"){
+    if(tokens[token_count].lexeme == ";"){
+      if (tokens[token_count-1].lexeme == "var")
+      {
+      std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
+      
+      exit(1);
+      }
       break;
+    }
+
+    if (tokens[token_count].lexeme == "var" && tokens[token_count+1].id != 249)
+    {
+            std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
+      
+      exit(1);
     }
 
     //Begin AST Build Here
     if(token.id == 249 && set == false){
+
+
+
       std::string variable_name = "";
       variable_name = token.lexeme;
 
       token_count = token_count + 1;
+      // if (tokens[token_count - 1].lexeme == "var" && symbols.HasVar(variable_name)==true)
+      // {
+      // std::cout<<"ERROR: Redeclaration Error at line "<<lineNumber<<std::endl;
+      // exit(1);
+      // }
       symbols.AddVar(variable_name, 1, ParseExpression(tokens, token_count, symbols).Run(symbols));
 
       break;
