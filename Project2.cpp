@@ -45,6 +45,13 @@ std::string RemoveTrailingZeros(std::string str) {
     return str;
 }
 
+std::string trim(std::string& str) {
+    str.erase(0, str.find_first_not_of(" \t\n\r"));
+    str.erase(str.find_last_not_of(" \t\n\r") + 1);
+
+    return str;
+}
+
 std::string Fix_string(std::string str, SymbolTable symbols)
 {
     /*
@@ -116,10 +123,12 @@ ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, 
 }
 
 ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
+
   if  (tokens[curr_index].lexeme == "!" || tokens[curr_index].lexeme == "-") { //do we have a unary operator, eg negation
     ASTNode out = ASTNode(ASTNode::UNARY_EXPRESSION, tokens[curr_index].lexeme);
     if (tokens[curr_index+1].id == 249) { //variable
       ASTNode leaf = ASTNode(ASTNode::LEAF_VARIABLE, tokens[curr_index+1].lexeme);
+
       out.AddChild(leaf);
 
       curr_index += 2;
@@ -129,7 +138,7 @@ ASTNode ParseTerm(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
       ASTNode leaf = ASTNode(std::stof(tokens[curr_index+1].lexeme));
       out.AddChild(leaf);
       
-      curr_index += 2;
+      curr_index += 1;
       return out;
     }
   }
@@ -174,10 +183,10 @@ ASTNode ParseExp(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolT
 ASTNode ParseMult(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   ASTNode lhs = ParseExp(tokens, curr_index, symbols);
 
-  while (tokens[curr_index].lexeme == "*" || tokens[curr_index].lexeme == "/" || tokens[curr_index].lexeme == "%") {
+  while (tokens[curr_index].lexeme == "*" || tokens[curr_index].lexeme == "/") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use token
-    ASTNode rhs = ParseAdd(tokens, curr_index, symbols);
+    ASTNode rhs = ParseExp(tokens, curr_index, symbols);
     ASTNode out = ASTNode(ASTNode::EXPRESSION_BLOCK, op);
     out.AddChild(lhs);
     out.AddChild(rhs);
@@ -187,7 +196,7 @@ ASTNode ParseMult(std::vector<emplex::Token> tokens, size_t & curr_index, Symbol
 }
 ASTNode ParseAdd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   ASTNode lhs = ParseMult(tokens, curr_index, symbols);
-  while (tokens[curr_index].lexeme == "+" || tokens[curr_index].lexeme == "-") {
+  while (tokens[curr_index].lexeme == "+" || tokens[curr_index].lexeme == "-" || tokens[curr_index].lexeme == "%") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use token
     ASTNode rhs = ParseMult(tokens, curr_index, symbols);
@@ -214,7 +223,7 @@ ASTNode ParseInequal(std::vector<emplex::Token> tokens, size_t & curr_index, Sym
 }
 ASTNode ParseIsEqual(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   ASTNode lhs = ParseInequal(tokens, curr_index, symbols);
-  if (tokens[curr_index].lexeme == "== " || tokens[curr_index].lexeme == " != ") {
+  if (tokens[curr_index].lexeme == "==" || tokens[curr_index].lexeme == "!=") {
     std::string op = tokens[curr_index].lexeme;
     curr_index++; //use == or !=
     ASTNode rhs = ParseInequal(tokens, curr_index, symbols);
@@ -228,7 +237,6 @@ ASTNode ParseIsEqual(std::vector<emplex::Token> tokens, size_t & curr_index, Sym
 }
 ASTNode ParseLogicAnd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols){
   ASTNode lhs = ParseIsEqual(tokens, curr_index, symbols);
-
 
   while (tokens[curr_index].lexeme == "&&") {
     size_t temp = curr_index;
@@ -331,7 +339,9 @@ void Print(){
           token_count++;
         };
       } else {
-        std::cout << ParseExpression(tokens, token_count, symbols).Run(symbols) << std::endl;
+        auto result = ParseExpression(tokens, token_count, symbols).Run(symbols);
+
+        std::cout << result << std::endl;
       }
       break;
       
@@ -360,57 +370,106 @@ void If(){
   bool buildAST = false;
   std::vector<int> skipping;
 
-  while(token_count < tokens.size()){    
-
-    token_count++;
-    emplex::Token token = tokens[token_count];
-    
-
-    if (ids.find(token.id) != ids.end()) {
-        break;
+  token_count = token_count + 2;
+  int result = ParseExpression(tokens, token_count, symbols).Run(symbols);
+  if(result == 1){
+    token_count = token_count + 1;
+    if(tokens[token_count].lexeme == "{"){
+      symbols.PushScope();
     }
 
-    if (token.lexeme == "("){
-      buildAST = true;
-      token_count = token_count + 1;
-      if(ParseExpression(tokens, token_count, symbols).Run(symbols) == 1){
-        if(tokens[token_count + 1].lexeme == "{"){
-          symbols.PushScope();
-        }
-      } else {
-        if(tokens[token_count + 1].lexeme != "{"){
-          token_count++;
+    token_count--;
+    
+  }
+  else {
+    goToElse = true;
 
-          //Skip to end
-          while(tokens[token_count].lexeme != ";"){
-            token_count++;
-          }
-
+    int a = 0;
+    token_count = token_count + 1;
+    if(tokens[token_count].lexeme != "{"){
+      while(true){
+        if(tokens[token_count].lexeme == ";"){
           break;
         }
+        token_count++;
+      }
+    }
+    else {
+       while(true){
+        if(tokens[token_count].lexeme == "{"){
+          a++;
+        }
 
-        //Skip to end
-        std::vector<int> skipping;
-        skipping.push_back(1);
-        while(tokens[token_count].lexeme != "}" && skipping.size() > 0){
-          token_count++;
-          if(tokens[token_count].lexeme == "{"){
-            skipping.push_back(1);
-          }
-          else if(tokens[token_count].lexeme == "}"){
-            skipping.pop_back();
+        if(tokens[token_count].lexeme == "}"){
+          a--;
+
+          if(a <= 0){
+            scope.pop_back();
+            break;
           }
         }
 
-        break;
+        token_count++;
       }
+    }
+   
+  }
+}
 
-      break;
-      
+
+
+void Else(){
+  /*
+  Else Functionality
+
+  Enters when "else" when if is not valid
+
+  If goToElse is true, run, otherwise skips block
+  */
+
+  bool buildAST = false;
+  std::vector<int> skipping;
+
+  token_count = token_count + 1;
+  if(goToElse){
+    goToElse = false;
+    if(tokens[token_count].lexeme == "{"){
+      scope.push_back(-1);
+      symbols.PushScope();
+    } else {
+      token_count--;
     }
 
-    token_count++;
-    
+  }
+  else {
+    int a = 0;
+    token_count = token_count;
+    if(tokens[token_count].lexeme != "{"){
+      while(true){
+        if(tokens[token_count].lexeme == ";"){
+          break;
+        }
+        token_count++;
+      }
+    }
+    else {
+      while(true){
+          if(tokens[token_count].lexeme == "{"){
+            a++;
+          }
+
+          if(tokens[token_count].lexeme == "}"){
+            a--;
+
+            if(a <= 0){
+              break;
+            }
+          }
+
+          token_count++;
+        }
+    }
+   
   }
 }
 
@@ -425,64 +484,52 @@ void While(){
   If Expression is false, Skips to closing '}'
   */
 
-  bool buildAST = false;
+   bool buildAST = false;
   std::vector<int> skipping;
 
-  while(token_count < tokens.size()){  
-    token_count++;
-    emplex::Token token = tokens[token_count];
-
-    if (ids.find(token.id) != ids.end()) {
-        break;
+  token_count = token_count + 2;
+  int result = ParseExpression(tokens, token_count, symbols).Run(symbols);
+  if(result == 1){
+    token_count = token_count + 1;
+    if(tokens[token_count].lexeme == "{"){
+      symbols.PushScope();
+    } else {
+      oneLine = true;
     }
 
-    if (token.lexeme == "("){
-      buildAST = true;
-      token_count++;
-      if(ParseExpression(tokens, token_count, symbols).Run(symbols) == 1){
-        if(tokens[token_count].lexeme == "{"){
-          symbols.PushScope();
-        } else {
-          // token_count--;
-          oneLine = true;
-        }
-
-        break;
-      } else {
-        if(tokens[token_count + 1].lexeme != "{"){
-          //Skip to end
-          while(tokens[token_count].lexeme != ";"){
-            token_count++;
-            continue;
-          }
-
+    token_count--;
+    
+  }
+  else {
+    scope.pop_back();
+    int a = 0;
+    token_count = token_count + 1;
+    if(tokens[token_count].lexeme != "{"){
+      while(true){
+        if(tokens[token_count].lexeme == ";"){
           break;
         }
-
-        //Skip to end
-        std::vector<int> skipping;
-        skipping.push_back(1);
-        while(tokens[token_count].lexeme != "}" && skipping.size() > 0){
-          token_count++;
-          if(tokens[token_count].lexeme == "{"){
-            skipping.push_back(1);
-          }
-          else if(tokens[token_count].lexeme == "}"){
-            skipping.pop_back();
-          }
-        }
-
-        break;
+        token_count++;
       }
-      
-      
-
-      break;
-      
     }
+    else {
+      while(true){
+      if(tokens[token_count].lexeme == "{"){
+        a++;
+      }
 
-    token_count++;
-    
+      if(tokens[token_count].lexeme == "}"){
+        a--;
+
+        if(a <= 0){
+          break;
+        }
+      }
+
+      token_count++;
+    }
+    }
+   
   }
 }
 
@@ -500,7 +547,6 @@ void Variable(){
 
   while(token_count < tokens.size()){
     token = tokens[token_count + 1];
-
 
     if (ids.find(token.id) != ids.end()) {
         break;
@@ -529,6 +575,9 @@ void Variable(){
   }
 }
 
+float roundToFiveDecimals(float number) {
+    return std::round(number * 100000) / 100000;  // Round to 5 decimal places
+}
 
 void CheckForKey(emplex::Token &token){
   /*
@@ -539,42 +588,14 @@ void CheckForKey(emplex::Token &token){
 
   scope is meant to allow program to deal with nests
   */
+
   //If-Else
   if(token.lexeme == "if" || token.lexeme == "if "){
     scope.push_back(-1);
     If();
   }
-  else if(token.lexeme == "else" || token.lexeme == "else "){
-    if(goToElse){
-      scope.push_back(-1);
-      token_count++;
-      token_count++;
-    } else {
-      if(tokens[token_count + 1].lexeme != "{"){
-        //Skip to end
-        while(tokens[token_count].lexeme != ";"){
-          token_count++;
-          continue;
-        }
-
-      } else {
-        //Skip to end
-        std::vector<int> skipping;
-        skipping.push_back(1);
-        while(tokens[token_count].lexeme != "}" && skipping.size() > 0){
-          token_count++;
-          if(tokens[token_count].lexeme == "{"){
-            skipping.push_back(1);
-          }
-          else if(tokens[token_count].lexeme == "}"){
-            skipping.pop_back();
-          }
-        }
-      }
-
-    }
-    
-    
+  else if(token.lexeme == "else" || token.lexeme == "else " || token.lexeme == " else "|| token.lexeme == " else"){
+    Else();
   }
   //While
   else if(token.lexeme ==  "while" || token.lexeme == "while "){
@@ -592,11 +613,14 @@ void CheckForKey(emplex::Token &token){
     Variable();
   }
 
+  
+
   else if(token.id == 249){
     std::string temp = token.lexeme;
     token_count = token_count + 2;
     float t = ParseExpression(tokens, token_count, symbols).Run(symbols);
-    symbols.SetValue(temp, t);
+    
+    symbols.SetValue(temp, roundToFiveDecimals(t));
     token = tokens[token_count];
   }
 }
@@ -625,38 +649,41 @@ void Parse()
     //Beginning of Scope
     if(token.lexeme == "{"){
       symbols.PushScope(); //Adds to top layer of symbol tree
-      scope.push_back(-1);
+      // scope.push_back(-1);
     }
 
     if(token.lexeme == "}"){
-      // std::cout << symbols.Table.size() << std::endl;
-    
       //If ending while loop, restarts from the top
-      int temp = scope.back();
-      scope.pop_back(); 
+       symbols.PopScope();
+      
+      if(scope.size()){
 
-      if(temp != -1){
-        token_count = temp - 1;
-        token = tokens[token_count];
-      } else {
-        symbols.PopScope();
+        int temp = scope.back();
+        scope.pop_back(); 
+
+        // std::cout << temp << " " << tokens[temp].lexeme << std::endl;
+        
+        if(temp != -1){
+          token_count = temp - 1;
+        } 
       }
     } else {
       if(oneLine && token.lexeme == ";"){
       oneLine = false;
       
       //If ending while loop, restarts from the top
-      int temp = scope.back();
-      scope.pop_back(); 
+      if(scope.size()){
+        int temp = scope.back();
+        scope.pop_back(); 
 
-      if(temp != -1){
-        token_count = temp - 1;
-        token = tokens[token_count + 1];
-        continue;
+        if(temp != -1){
+          token_count = temp - 1;
+          token = tokens[token_count + 1];
+          continue;
+        }
       }
-
       
-    }
+      }
     }
 
     //Line Numbers
@@ -696,6 +723,7 @@ int main(int argc, char * argv[])
 
   for (size_t i = 0; i < tokens.size(); ++i) {
       if (tokens[i].id != 250) {
+          tokens[i].lexeme = trim(tokens[i].lexeme);
           filtered_tokens.push_back(tokens[i]);
       }
   }
