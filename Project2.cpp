@@ -118,6 +118,12 @@ ASTNode ParseAdd(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolT
 /// @return an ASTNode, ready to be run
 ASTNode ParseExpression(std::vector<emplex::Token> tokens, size_t & curr_index, SymbolTable & symbols) {
   // Pass the filtered tokens to ParseAssign
+    ASTNode out = ParseAssign(tokens, curr_index, symbols);
+  if (tokens[curr_index].lexeme==">" || tokens[curr_index].lexeme=="<")
+  {
+    exit(1);
+  }
+  return out;
   return ParseAssign(tokens, curr_index, symbols);
 
 }
@@ -552,7 +558,21 @@ void Variable(){
         break;
     }
 
-    
+      if(tokens[token_count].lexeme == ";"){
+      if (tokens[token_count-1].lexeme == "var")
+      {
+      std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
+      
+      exit(1);
+      }
+      break;
+    }
+    if (tokens[token_count].lexeme == "var" && tokens[token_count+1].id != 249)
+    {
+            std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
+      
+      exit(1);
+    }
     if(token.lexeme == ";"){
       break;
     }
@@ -563,6 +583,11 @@ void Variable(){
       variable_name = token.lexeme;
 
       token_count = token_count + 1;
+      if (symbols.HasVarInScope(variable_name)==true)
+      {
+      std::cout<<"ERROR: Redeclaration Error at line "<<lineNumber<<std::endl;
+      exit(1);
+      }
       symbols.AddVar(variable_name, 1, ParseExpression(tokens, token_count, symbols).Run(symbols));
 
       break;
@@ -610,6 +635,52 @@ void CheckForKey(emplex::Token &token){
 
   //Variable
   else if(token.lexeme == "var"){
+        int temp_token_count = token_count; // makes a new counter 
+    std::vector<std::string > all_tokens; // takes all tokens
+    int var_count = 0; // number of variables
+    do {
+      all_tokens.push_back(tokens[temp_token_count].lexeme);
+      if (tokens[temp_token_count].id == 249)
+      {
+          var_count++;  // add variables
+      }
+      temp_token_count++;
+    } while (tokens[temp_token_count].lexeme != ";");
+    auto it = std::find(all_tokens.begin(), all_tokens.end(), "=");
+    if(var_count>=3 && it == all_tokens.end()) // if there are 3 or more variables without = then there has to 
+                                                // be a syntax error
+    {
+      std::cout<<"ERROR: Syntax Error at line "<<lineNumber<<std::endl;
+      exit(1);
+    }
+
+    int temp =0;
+    while(temp == 0)
+    {
+    //std::cout<<"entered1"<<std::endl;
+    int temp_token_count = token_count;
+      do{
+        temp_token_count++;
+      }while(tokens[temp_token_count].lexeme != "=");
+    
+      //std::vector<std::string> vars;
+      do {
+      //std::cout<<"entered2"<<std::endl;
+      if (tokens[temp_token_count].id == 249)
+      {
+              //std::cout<<tokens[temp_token_count].lexeme<<std::endl;
+
+          if (symbols.HasVarInScope(tokens[temp_token_count].lexeme) == false)
+          {
+              std::cout<<"ERROR: Unknown Identifier at line: "<<lineNumber<<std::endl;
+              exit(1);
+          }
+      }
+      temp_token_count++;
+    } while (tokens[temp_token_count].lexeme != ";");
+      temp=1;
+    }
+
     Variable();
   }
 
