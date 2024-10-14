@@ -43,6 +43,16 @@ public:
     
     return false; 
   }
+  bool HasVarInScope(std::string name) const { // swabhan wrote this function
+    // Check if a variable is present in the top level (last entry) of the Symbol Table
+    if (!Table.empty()) {
+        const auto& topLevel = Table.back();  // Access the top level (last entry)
+        if (topLevel.find(name) != topLevel.end()) {
+            return true;
+        }
+    }
+    return false; 
+}
 
   size_t AddVar(std::string name, size_t line_num, double value) { 
     //Adds a variable to the highest scope
