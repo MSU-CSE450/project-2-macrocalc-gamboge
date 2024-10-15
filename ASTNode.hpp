@@ -230,7 +230,7 @@ public:
         return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
         break;
       }
-      case LEAF_LITERAL:
+      /*case LEAF_LITERAL:
       {
           // if (symbols.HasVarInScope(value) == false)
           // {
@@ -240,7 +240,7 @@ public:
           // }
         return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
         break;
-      }
+      }*/
       case LEAF_LITERAL:
       {
         //check symbol table for variable.
