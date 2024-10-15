@@ -680,11 +680,7 @@ void CheckForKey(emplex::Token &token){
       {
               //std::cout<<tokens[temp_token_count].lexeme<<std::endl;
 
-          if (symbols.HasVarInScope(tokens[temp_token_count].lexeme) == false)
-          {
-              std::cout<<"ERROR: Unknown Identifier at line: "<<lineNumber<<std::endl;
-              exit(1);
-          }
+
       }
       temp_token_count++;
     } while (tokens[temp_token_count].lexeme != ";");
