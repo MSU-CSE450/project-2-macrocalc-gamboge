@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <iostream>
 
 class SymbolTable {
 private:
@@ -11,21 +12,79 @@ private:
   
   // HINT: YOU CAN CONVERT EACH VARIABLE NAME TO A UNIQUE ID TO CLEANLY DEAL
   //       WITH SHADOWING AND LOOKING UP VARIABLES LATER.
+  
 
 public:
+  std::vector<std::unordered_map<std::string, double>> Table {
+        {{"1", 1.90}, {"2", 2.3}}
+    };
+
   // CONSTRUCTOR, ETC HERE
+  SymbolTable(){}
 
   // FUNCTIONS TO MANAGE SCOPES (NEED BODIES FOR THESE IF YOU WANT TO USE THEM)
-  void PushScope() { ; }
-  void PopScope() { ; }
+  void PushScope() { 
+    Table.emplace_back();
+  }
+  void PopScope() { 
+    Table.pop_back(); 
+  }
 
   // FUNCTIONS TO MANAGE VARIABLES - LOTS MORE NEEDED
   // (NEED REAL FUNCTION BODIES FOR THESE IF YOU WANT TO USE THEM)
-  bool HasVar(std::string name) const { return false; }
-  size_t AddVar(std::string name, size_t line_num) { return 0; }
+  bool HasVar(std::string name) const { 
+    //Checks if a variable is present in the Symbol Table
+    for (auto it = Table.rbegin(); it != Table.rend(); ++it)
+    {
+      if (it->find(name) != it->end()) {
+          return true;
+      }
+    }
+    
+    return false; 
+  }
+  bool HasVarInScope(std::string name) const { // swabhan wrote this function
+    // Check if a variable is present in the top level (last entry) of the Symbol Table
+    if (!Table.empty()) {
+        const auto& topLevel = Table.back();  // Access the top level (last entry)
+        if (topLevel.find(name) != topLevel.end()) {
+            return true;
+        }
+    }
+    return false; 
+}
+
+  size_t AddVar(std::string name, size_t line_num, double value) { 
+    //Adds a variable to the highest scope
+    auto& currScope = Table.back();
+    currScope[name] = value;
+    return 0; 
+  }
+
   double GetValue(std::string name) const {
-    assert(HasVar(name));
+   //Gets a key value pair in the highest scope
+    for (auto it = Table.rbegin(); it != Table.rend(); ++it)
+    {
+      auto found = it->find(name);
+      if (found != it->end()) {
+        return found->second;
+      }
+    }
+
     return 0.0;
   }
-  void SetValue(std::string name, double value) { ; }
+
+  void SetValue(std::string name, double value) {
+    //Updates a key value pair in the highest scope that variable is present
+    // assert(HasVar(name));
+
+    for (auto it = Table.rbegin(); it != Table.rend(); ++it)
+    {
+      if (it->find(name) != it->end()) {
+        (*it)[name] = value;
+        break;
+      }
+    }
+  }
+
 };
