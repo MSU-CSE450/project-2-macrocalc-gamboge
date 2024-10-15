@@ -20,6 +20,7 @@ SymbolTable symbols{};
 
 //Initialize Info for Parsing
 int lineNumber = 1;
+int GetLineNumber(){return lineNumber;};
 size_t token_count = 1;
 emplex::Token token;
 std::vector<emplex::Token> tokens;
@@ -362,6 +363,11 @@ void Print(){
 
     
   }
+    // if (tokens[token_count].lexeme != ";" && tokens[token_count].id != 248 && tokens[token_count].id != 250)
+    //   {
+    //     exit(1);
+    //   }
+
 }
 
 

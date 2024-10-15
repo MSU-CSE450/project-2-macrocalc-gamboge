@@ -121,7 +121,12 @@ public:
 
     case ASSIGN: {
       assert(GetChildren().size() == 2);
-      assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
+      //assert(GetChild(0).GetType() == ASTNode::LEAF_VARIABLE);
+      if (GetChild(0).GetType() != ASTNode::LEAF_VARIABLE)
+      {
+        std::cout<<"ERROR: Assignment error"<<std::endl;
+        exit(1);
+      }
 
       std::string var_id = GetChild(0).GetValue();
 
@@ -222,6 +227,17 @@ public:
     case LEAF_VARIABLE:
       {
         //check symbol table for variable.
+        return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
+        break;
+      }
+      case LEAF_LITERAL:
+      {
+          // if (symbols.HasVarInScope(value) == false)
+          // {
+            
+          //     std::cout<<"ERROR: Unknown Identifier at line: "<<std::endl;
+          //     exit(1);
+          // }
         return symbols.GetValue(value); //TODO: err if not there? if not handled by table itself
         break;
       }
